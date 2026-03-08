@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Info, Droplets, Waves, Leaf, Thermometer, Snowflake, Wind, Sun, TrendingDown, CloudRain, Shield, ShieldAlert, Brain, PackageOpen, Zap, Crosshair } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Info, Droplets, Waves, Leaf, Thermometer, Snowflake, Wind, Sun, TrendingDown, CloudRain, Shield, ShieldAlert, Brain, PackageOpen, Zap, Crosshair, GitCompareArrows } from "lucide-react";
 
 const hydroComponents = [
   { icon: Waves, label: "Nehir Debisi (Mutlak)", weight: 20, range: "200–2000 m³/s", invert: true, source: "Open-Meteo Flood (GloFAS)", desc: "Fırat ve Dicle nehirlerindeki ortalama debi. Debi düştükçe su stresi artar ve kriz riski yükselir." },

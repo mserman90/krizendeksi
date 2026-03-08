@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { saveHydroSnapshot } from "@/lib/api/snapshotApi";
 import WeeklyTrendChart from "@/components/WeeklyTrendChart";
+import ActionRecommendations from "@/components/ActionRecommendations";
 import { toast } from "sonner";
 
 const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
@@ -296,6 +297,13 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Row 6: Action Recommendations Report */}
+      <ActionRecommendations
+        hydroScores={hydroCrisis}
+        natoScores={natoCrisis}
+        basinName={basin.name}
+      />
     </div>
   );
 };

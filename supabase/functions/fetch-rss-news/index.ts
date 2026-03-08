@@ -47,6 +47,7 @@ function parseRssXml(xml: string, sourceName: string, applyFilter: boolean): Rss
     if (applyFilter && !KEYWORDS.test(text)) {
       continue;
     }
+    items.push({ title, link, description, pubDate, source: sourceName });
   }
 
   return items;
@@ -58,6 +59,12 @@ Deno.serve(async (req) => {
   }
 
   try {
+    let applyFilter = true;
+    try {
+      const body = await req.json();
+      if (body?.filter === false) applyFilter = false;
+    } catch { /* no body is fine */ }
+
     const allItems: RssItem[] = [];
     const errors: string[] = [];
 
@@ -81,7 +88,7 @@ Deno.serve(async (req) => {
         }
 
         const text = await resp.text();
-        const items = parseRssXml(text, name);
+        const items = parseRssXml(text, name, applyFilter);
         allItems.push(...items);
       } catch (e) {
         errors.push(`${name}: ${e instanceof Error ? e.message : String(e)}`);

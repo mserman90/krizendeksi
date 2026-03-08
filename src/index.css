@@ -38,6 +38,11 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
 
+    --crisis-low: 142 71% 45%;
+    --crisis-medium: 48 96% 53%;
+    --crisis-high: 25 95% 53%;
+    --crisis-critical: 0 84% 60%;
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;

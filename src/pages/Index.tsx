@@ -1,12 +1,134 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { generateWeeklyTimeSeries, generateMockNews, getCrisisLevel } from "@/lib/mockData";
+import CrisisGauge from "@/components/CrisisGauge";
+import ReservoirChart from "@/components/ReservoirChart";
+import RainfallChart from "@/components/RainfallChart";
+import NewsPanel from "@/components/NewsPanel";
+import ScoreBreakdown from "@/components/ScoreBreakdown";
+import BasinInfo from "@/components/BasinInfo";
+import { Activity, Droplets, CloudRain, Newspaper } from "lucide-react";
 
 const Index = () => {
+  const timeSeries = useMemo(() => generateWeeklyTimeSeries(12), []);
+  const news = useMemo(() => generateMockNews(), []);
+  const latest = timeSeries[timeSeries.length - 1];
+  const { label } = getCrisisLevel(latest.scores.weeklyIndex);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
+          <Activity className="h-6 w-6 text-primary" />
+          <div>
+            <h1 className="text-lg font-bold tracking-tight">Fırat-Dicle Haftalık OSINT İzleme Paneli</h1>
+            <p className="text-xs text-muted-foreground">
+              {latest.metrics.weekStart} — {latest.metrics.weekEnd} · Durum: {label}
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Row 1: Crisis Gauge + Score Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="md:row-span-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Activity className="h-4 w-4" /> Kriz Endeksi
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <CrisisGauge value={latest.scores.weeklyIndex} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Droplets className="h-4 w-4" /> Rezervuar Alanı
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold font-mono">{latest.metrics.reservoirAreaKm2}</p>
+              <p className="text-xs text-muted-foreground">km² (Atatürk Barajı)</p>
+              <p className="text-xs mt-2">
+                Skor: <span className="font-mono font-semibold">{Math.round(latest.scores.areaScore)}</span>/100
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <CloudRain className="h-4 w-4" /> Haftalık Yağış
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold font-mono">{latest.metrics.basinRainMm}</p>
+              <p className="text-xs text-muted-foreground">mm (havza ortalaması)</p>
+              <p className="text-xs mt-2">
+                Skor: <span className="font-mono font-semibold">{Math.round(latest.scores.rainScore)}</span>/100
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Row 2: Reservoir Area Chart */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Rezervuar Su Alanı (Son 12 Hafta)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReservoirChart data={timeSeries} />
+          </CardContent>
+        </Card>
+
+        {/* Row 3: Rainfall + News */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Haftalık Yağış (mm)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RainfallChart data={timeSeries} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Newspaper className="h-4 w-4" /> İlgili Haberler ({news.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <NewsPanel items={news} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Row 4: Score Breakdown + Basin Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Skor Detayları</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScoreBreakdown scores={latest.scores} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Havza Bilgileri</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BasinInfo />
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </div>
   );
 };

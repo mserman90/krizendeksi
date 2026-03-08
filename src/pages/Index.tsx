@@ -138,6 +138,8 @@ const Index = () => {
                 isLoading={newsLoading}
                 onRefresh={handleFetchNews}
                 error={newsError}
+                filterEnabled={newsFilter}
+                onFilterChange={setNewsFilter}
               />
             </CardContent>
           </Card>

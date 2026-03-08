@@ -19,9 +19,9 @@ const RSS_SOURCES: Record<string, string> = {
   ntv: "https://www.ntv.com.tr/turkiye.rss",
 };
 
-const KEYWORDS = /\b(Fırat|Dicle|Euphrates|Tigris|baraj|su seviyesi|su kesintisi|taşkın|kuraklık|nehir|sulama|GAP|DSİ|hidroelektrik|reservoir|dam|drought|flood)\b/i;
+const KEYWORDS = /\b(Fırat|Dicle|Euphrates|Tigris|baraj|su seviyesi|su kesintisi|taşkın|kuraklık|nehir|sulama|GAP|DSİ|hidroelektrik|reservoir|dam|drought|flood|Keban|Ilısu|Karakaya|Atatürk Barajı|Birecik|su|enerji|elektrik|akış|debi|havza|göl|gölet|kurak|sel|yağmur|yağış|irrigation|water|energy|river|basin)\b/i;
 
-function parseRssXml(xml: string, sourceName: string): RssItem[] {
+function parseRssXml(xml: string, sourceName: string, applyFilter: boolean): RssItem[] {
   const items: RssItem[] = [];
 
   // Simple XML parsing without external deps
@@ -44,8 +44,8 @@ function parseRssXml(xml: string, sourceName: string): RssItem[] {
     const pubDate = (block.match(/<pubDate[^>]*>([\s\S]*?)<\/pubDate>/i)?.[1] || "").trim();
 
     const text = `${title} ${description}`;
-    if (KEYWORDS.test(text)) {
-      items.push({ title, link, description, pubDate, source: sourceName });
+    if (applyFilter && !KEYWORDS.test(text)) {
+      continue;
     }
   }
 

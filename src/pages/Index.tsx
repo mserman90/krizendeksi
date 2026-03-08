@@ -1,10 +1,11 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getCrisisLevel, computeHydroCrisisIndex } from "@/lib/mockData";
-import type { HydroCrisisScores } from "@/lib/mockData";
+import { getCrisisLevel, computeHydroCrisisIndex, computeNatoCrisisIndex } from "@/lib/mockData";
+import type { HydroCrisisScores, NatoCrisisScores } from "@/lib/mockData";
 import CrisisGauge from "@/components/CrisisGauge";
 import HydroCrisisBreakdown from "@/components/HydroCrisisBreakdown";
+import NatoCrisisBreakdown from "@/components/NatoCrisisBreakdown";
 import MethodologyDialog from "@/components/MethodologyDialog";
 import BasinInfo from "@/components/BasinInfo";
 import BasinMap from "@/components/BasinMap";
@@ -15,7 +16,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
 import { useCrisisAlerts } from "@/hooks/useCrisisAlerts";
 import { BASINS, type BasinConfig } from "@/lib/basinConfig";
-import { Activity, Droplets, CloudRain, Map, Database, Bell, TrendingUp, Save } from "lucide-react";
+import { Activity, Droplets, CloudRain, Map, Database, Bell, TrendingUp, Save, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { saveHydroSnapshot } from "@/lib/api/snapshotApi";
@@ -27,16 +28,17 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
   const [alertThreshold, setAlertThreshold] = useState(60);
   const [saving, setSaving] = useState(false);
   const [trendKey, setTrendKey] = useState(0);
+  const [method, setMethod] = useState<"hydro" | "nato">("hydro");
 
   useEffect(() => {
     hydro.reset();
     hydro.fetch(14, basin.id);
   }, [basin.id]);
 
-  const hydroCrisis: HydroCrisisScores | null = useMemo(() => {
+  const hydroInput = useMemo(() => {
     if (!hydro.data?.summary) return null;
     const s = hydro.data.summary;
-    return computeHydroCrisisIndex({
+    return {
       totalPrecipMm: s.totalPrecipMm,
       avgDischargeM3s: s.avgDischargeM3s,
       avgSoilMoisture: s.avgSoilMoisture,
@@ -46,8 +48,18 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       avgWindSpeed: s.avgWindSpeed,
       avgSolarRadiation: s.avgSolarRadiation,
       dischargeAnomalyRatio: s.dischargeAnomalyRatio,
-    });
+    };
   }, [hydro.data]);
+
+  const hydroCrisis: HydroCrisisScores | null = useMemo(() => {
+    if (!hydroInput) return null;
+    return computeHydroCrisisIndex(hydroInput);
+  }, [hydroInput]);
+
+  const natoCrisis: NatoCrisisScores | null = useMemo(() => {
+    if (!hydroInput) return null;
+    return computeNatoCrisisIndex(hydroInput);
+  }, [hydroInput]);
 
   const handleSave = useCallback(async () => {
     if (!hydro.data?.summary || !hydroCrisis) return;
@@ -78,7 +90,9 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       setSaving(false);
     }
   }, [hydro.data, hydroCrisis, basin.id]);
-  const crisisValue = hydroCrisis?.weeklyIndex ?? 50;
+
+  const activeCrisis = method === "nato" ? natoCrisis : hydroCrisis;
+  const crisisValue = activeCrisis?.weeklyIndex ?? 50;
   const isHydroLive = hydroCrisis !== null;
 
   return (
@@ -89,17 +103,39 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         <Card className="dashboard-card">
           <CardHeader className="pb-2">
-            <CardTitle className="section-title flex items-center gap-2">
+            <CardTitle className="section-title flex items-center gap-2 flex-wrap">
               <Activity className="h-4 w-4 text-primary" /> Kriz Endeksi
               {isHydroLive && <Badge variant="secondary" className="text-[10px] font-medium">● Canlı</Badge>}
               {hydro.loading && <span className="text-[10px] text-muted-foreground animate-pulse">Yükleniyor...</span>}
               <MethodologyDialog />
             </CardTitle>
+            {/* Method Toggle */}
+            <div className="flex gap-1 mt-2">
+              <Button
+                variant={method === "hydro" ? "default" : "outline"}
+                size="sm"
+                className="h-6 text-[10px] px-2 gap-1"
+                onClick={() => setMethod("hydro")}
+              >
+                <Droplets className="h-3 w-3" /> Hidrolojik
+              </Button>
+              <Button
+                variant={method === "nato" ? "default" : "outline"}
+                size="sm"
+                className="h-6 text-[10px] px-2 gap-1"
+                onClick={() => setMethod("nato")}
+              >
+                <Shield className="h-3 w-3" /> NATO CCSIA
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-center">
               <CrisisGauge value={crisisValue} />
             </div>
+            {method === "nato" && (
+              <p className="text-[10px] text-center text-muted-foreground italic">NATO Kırılganlık Endeksi</p>
+            )}
             <div className="space-y-1.5 pt-3 border-t border-border/40">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-muted-foreground font-medium">Uyarı Eşiği</span>
@@ -233,11 +269,17 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
           <CardHeader className="pb-2">
             <CardTitle className="section-title flex items-center gap-2">
               Skor Detayları
-              {isHydroLive && <Badge variant="secondary" className="text-[10px] font-medium">● Hidrolojik</Badge>}
+              {isHydroLive && (
+                <Badge variant="secondary" className="text-[10px] font-medium">
+                  {method === "nato" ? "● NATO CCSIA" : "● Hidrolojik"}
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {hydroCrisis ? (
+            {method === "nato" && natoCrisis ? (
+              <NatoCrisisBreakdown scores={natoCrisis} />
+            ) : hydroCrisis ? (
               <HydroCrisisBreakdown scores={hydroCrisis} />
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4 animate-pulse">Veri yükleniyor...</p>

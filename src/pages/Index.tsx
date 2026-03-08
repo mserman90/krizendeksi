@@ -195,7 +195,31 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
         </CardContent>
       </Card>
 
-      {/* Row 4: Score Breakdown + Basin Info */}
+      {/* Row 4: Save & Weekly Trend */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" /> Haftalık Trend Karşılaştırması
+            <div className="ml-auto">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs gap-1.5"
+                onClick={handleSave}
+                disabled={saving || !isHydroLive}
+              >
+                <Save className="h-3.5 w-3.5" />
+                {saving ? "Kaydediliyor..." : "Verileri Kaydet"}
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <WeeklyTrendChart key={trendKey} basinId={basin.id} />
+        </CardContent>
+      </Card>
+
+      {/* Row 5: Score Breakdown + Basin Info */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">

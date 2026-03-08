@@ -82,16 +82,16 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
   const isHydroLive = hydroCrisis !== null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <CrisisAlertBanner crisisIndex={crisisValue} threshold={alertThreshold} />
 
       {/* Row 1: Crisis Gauge + Score Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="dashboard-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Activity className="h-4 w-4" /> Kriz Endeksi
-              {isHydroLive && <Badge variant="secondary" className="text-[10px]">Canlı</Badge>}
+            <CardTitle className="section-title flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary" /> Kriz Endeksi
+              {isHydroLive && <Badge variant="secondary" className="text-[10px] font-medium">● Canlı</Badge>}
               {hydro.loading && <span className="text-[10px] text-muted-foreground animate-pulse">Yükleniyor...</span>}
               <MethodologyDialog />
             </CardTitle>
@@ -100,10 +100,10 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
             <div className="flex justify-center">
               <CrisisGauge value={crisisValue} />
             </div>
-            <div className="space-y-1.5 pt-2 border-t border-border/50">
+            <div className="space-y-1.5 pt-3 border-t border-border/40">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-muted-foreground">Uyarı Eşiği</span>
-                <span className="text-xs font-mono font-semibold">{alertThreshold}</span>
+                <span className="text-[10px] text-muted-foreground font-medium">Uyarı Eşiği</span>
+                <span className="text-xs font-mono font-bold text-primary">{alertThreshold}</span>
               </div>
               <input
                 type="range"
@@ -122,44 +122,50 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dashboard-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Droplets className="h-4 w-4" /> Toplam Yağış
+            <CardTitle className="section-title flex items-center gap-2">
+              <Droplets className="h-4 w-4 text-primary" /> Toplam Yağış
             </CardTitle>
           </CardHeader>
           <CardContent>
             {isHydroLive ? (
-              <>
-                <p className="text-3xl font-bold font-mono">{hydro.data!.summary.totalPrecipMm}</p>
-                <p className="text-xs text-muted-foreground">mm (havza toplam)</p>
-                <p className="text-xs mt-2">
-                  Skor: <span className="font-mono font-semibold">{Math.round(hydroCrisis!.precipScore)}</span>/100
-                </p>
-              </>
+              <div className="space-y-1">
+                <p className="stat-value">{hydro.data!.summary.totalPrecipMm}</p>
+                <p className="text-xs text-muted-foreground font-medium">mm · 14 günlük toplam</p>
+                <div className="flex items-center gap-2 pt-2">
+                  <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min(hydroCrisis!.precipScore, 100)}%` }} />
+                  </div>
+                  <span className="text-xs font-mono font-bold">{Math.round(hydroCrisis!.precipScore)}</span>
+                </div>
+              </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Veri bekleniyor...</p>
+              <p className="text-sm text-muted-foreground animate-pulse">Veri bekleniyor...</p>
             )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dashboard-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <CloudRain className="h-4 w-4" /> Ort. Nehir Debisi
+            <CardTitle className="section-title flex items-center gap-2">
+              <CloudRain className="h-4 w-4 text-primary" /> Ort. Nehir Debisi
             </CardTitle>
           </CardHeader>
           <CardContent>
             {isHydroLive ? (
-              <>
-                <p className="text-3xl font-bold font-mono">{hydro.data!.summary.avgDischargeM3s}</p>
-                <p className="text-xs text-muted-foreground">m³/s (havza ortalaması)</p>
-                <p className="text-xs mt-2">
-                  Skor: <span className="font-mono font-semibold">{Math.round(hydroCrisis!.dischargeScore)}</span>/100
-                </p>
-              </>
+              <div className="space-y-1">
+                <p className="stat-value">{hydro.data!.summary.avgDischargeM3s}</p>
+                <p className="text-xs text-muted-foreground font-medium">m³/s · havza ortalaması</p>
+                <div className="flex items-center gap-2 pt-2">
+                  <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min(hydroCrisis!.dischargeScore, 100)}%` }} />
+                  </div>
+                  <span className="text-xs font-mono font-bold">{Math.round(hydroCrisis!.dischargeScore)}</span>
+                </div>
+              </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Veri bekleniyor...</p>
+              <p className="text-sm text-muted-foreground animate-pulse">Veri bekleniyor...</p>
             )}
           </CardContent>
         </Card>
@@ -257,14 +263,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-border/50 sticky top-0 z-10 backdrop-blur-md" style={{ background: 'var(--gradient-header)' }}>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Activity className="h-6 w-6 text-primary" />
+            <div className="h-9 w-9 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Activity className="h-5 w-5 text-primary" />
+            </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight">Sınıraşan Su Havzaları OSINT İzleme Paneli</h1>
-              <p className="text-xs text-muted-foreground">
-                Türkiye'nin sınıraşan su havzalarının gerçek zamanlı hidrolojik izleme sistemi
+              <h1 className="text-base font-bold tracking-tight text-primary-foreground">
+                Sınıraşan Su Havzaları OSINT İzleme Paneli
+              </h1>
+              <p className="text-[11px] text-primary-foreground/60 font-medium">
+                Gerçek zamanlı hidrolojik izleme · Open-Meteo · GloFAS · NASA POWER
               </p>
             </div>
           </div>
@@ -272,14 +282,14 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <main className="container mx-auto px-4 py-5 space-y-5">
         <Tabs value={activeBasin} onValueChange={setActiveBasin} className="w-full">
-          <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
+          <TabsList className="w-full flex flex-wrap h-auto gap-1.5 bg-card border border-border p-1.5 rounded-lg">
             {BASINS.map((basin) => (
               <TabsTrigger
                 key={basin.id}
                 value={basin.id}
-                className="text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex-1 min-w-[120px]"
+                className="text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm flex-1 min-w-[120px] rounded-md transition-all"
               >
                 {basin.shortName}
               </TabsTrigger>
@@ -293,11 +303,11 @@ const Index = () => {
           ))}
         </Tabs>
 
-        {/* Alert History (shared across basins) */}
-        <Card>
+        {/* Alert History */}
+        <Card className="dashboard-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Bell className="h-4 w-4" /> Kriz Uyarı Geçmişi
+            <CardTitle className="section-title flex items-center gap-2">
+              <Bell className="h-4 w-4 text-primary" /> Kriz Uyarı Geçmişi
               {alerts.length > 0 && (
                 <Badge variant="destructive" className="text-[10px]">{alerts.length}</Badge>
               )}
@@ -308,6 +318,13 @@ const Index = () => {
           </CardContent>
         </Card>
       </main>
+
+      <footer className="border-t border-border/40 py-4">
+        <div className="container mx-auto px-4 flex items-center justify-between text-[10px] text-muted-foreground">
+          <span>© 2026 Sınıraşan Su Havzaları OSINT</span>
+          <span>Veri: Open-Meteo · GloFAS · NASA POWER</span>
+        </div>
+      </footer>
     </div>
   );
 };

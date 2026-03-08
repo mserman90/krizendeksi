@@ -9,7 +9,8 @@ import RainfallChart from "@/components/RainfallChart";
 import NewsPanel from "@/components/NewsPanel";
 import ScoreBreakdown from "@/components/ScoreBreakdown";
 import BasinInfo from "@/components/BasinInfo";
-import { Activity, Droplets, CloudRain, Newspaper } from "lucide-react";
+import BasinMap from "@/components/BasinMap";
+import { Activity, Droplets, CloudRain, Newspaper, Map } from "lucide-react";
 
 const Index = () => {
   const timeSeries = useMemo(() => generateWeeklyTimeSeries(12), []);
@@ -145,7 +146,19 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Row 4: Score Breakdown + Basin Info */}
+        {/* Row 4: Basin Map */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Map className="h-4 w-4" /> Fırat-Dicle Havzası Haritası
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BasinMap />
+          </CardContent>
+        </Card>
+
+        {/* Row 5: Score Breakdown + Basin Info */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="pb-2">

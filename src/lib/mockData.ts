@@ -128,6 +128,101 @@ export function computeHydroCrisisIndex(input: HydroCrisisInput): HydroCrisisSco
   };
 }
 
+// ---- NATO CCSIA-Based Vulnerability Index ----
+
+/**
+ * NATO Climate Change and Security Impact Assessment (CCSIA) inspired
+ * 6-pillar vulnerability index.
+ *
+ * Based on NATO's Climate Change and Security Action Plan (2021),
+ * NATO CCSIA Third Edition (2024), and STO-TR-SAS-182 methodology.
+ *
+ * NATO treats climate change as a "threat multiplier" across resilience
+ * pillars. This index maps hydrological data to NATO's security framework:
+ *
+ * 1. Water Scarcity Stress (25%) — Food/water resilience baseline
+ * 2. Hydrological Anomaly (20%) — Threat assessment: deviation from normal
+ * 3. Evaporative Demand Pressure (15%) — Environmental stress cascading
+ * 4. Critical Infrastructure Risk (15%) — Civil transport & energy resilience
+ * 5. Agricultural & Food Security (15%) — Food security, livelihood disruption
+ * 6. Cascading Instability Potential (10%) — Threat multiplier / displacement risk
+ */
+
+export interface NatoCrisisScores {
+  waterScarcityScore: number;       // Pillar 1
+  hydrologicalAnomalyScore: number; // Pillar 2
+  evaporativeDemandScore: number;   // Pillar 3
+  infrastructureRiskScore: number;  // Pillar 4
+  foodSecurityScore: number;        // Pillar 5
+  cascadingInstabilityScore: number; // Pillar 6
+  weeklyIndex: number;
+}
+
+export function computeNatoCrisisIndex(input: HydroCrisisInput): NatoCrisisScores {
+  // Pillar 1: Water Scarcity Stress (25%)
+  // Combines precipitation deficit and discharge — NATO's core "food and water resources" baseline
+  const precipDeficit = normalize(input.totalPrecipMm, 0, 80, true);
+  const dischargeDeficit = normalize(input.avgDischargeM3s, 200, 2000, true);
+  const waterScarcityScore = 0.55 * precipDeficit + 0.45 * dischargeDeficit;
+
+  // Pillar 2: Hydrological Anomaly (20%)
+  // NATO emphasizes deviation from historical norms as threat indicator
+  // Combines discharge anomaly ratio with soil moisture departure
+  const anomalyRatio = normalize(input.dischargeAnomalyRatio, 0.3, 1.5, true);
+  const soilDeparture = normalize(input.avgSoilMoisture, 0.05, 0.45, true);
+  const hydrologicalAnomalyScore = 0.6 * anomalyRatio + 0.4 * soilDeparture;
+
+  // Pillar 3: Evaporative Demand Pressure (15%)
+  // NATO CCSIA highlights cascading environmental stress — heat + evap + wind
+  const evap = normalize(input.totalEvapMm, 0, 70, false);
+  const solar = normalize(input.avgSolarRadiation, 1, 8, false);
+  const wind = normalize(input.avgWindSpeed, 0, 60, false);
+  const evaporativeDemandScore = 0.45 * evap + 0.30 * solar + 0.25 * wind;
+
+  // Pillar 4: Critical Infrastructure Risk (15%)
+  // NATO resilience baseline: extreme flow conditions threaten civil transport,
+  // energy (hydropower), and infrastructure
+  // Both very low and very high discharge are risky
+  const lowFlowRisk = normalize(input.avgDischargeM3s, 200, 800, true);
+  const humidityStress = normalize(input.avgHumidity, 20, 90, true);
+  const infrastructureRiskScore = 0.6 * lowFlowRisk + 0.4 * humidityStress;
+
+  // Pillar 5: Agricultural & Food Security (15%)
+  // NATO CCSIA: food security directly linked to soil moisture, precipitation, snow recharge
+  const soilDry = normalize(input.avgSoilMoisture, 0.05, 0.45, true);
+  const snowRecharge = normalize(input.totalSnowfallMm, 0, 50, true);
+  const rainDeficit = normalize(input.totalPrecipMm, 0, 80, true);
+  const foodSecurityScore = 0.40 * soilDry + 0.35 * rainDeficit + 0.25 * snowRecharge;
+
+  // Pillar 6: Cascading Instability Potential (10%)
+  // NATO's "threat multiplier" concept: when multiple stressors align,
+  // risk of displacement, conflict and cascading failure rises non-linearly
+  const stressors = [precipDeficit, dischargeDeficit, anomalyRatio, soilDeparture, evap];
+  const highStressCount = stressors.filter(s => s > 65).length;
+  const avgStress = stressors.reduce((a, b) => a + b, 0) / stressors.length;
+  // Non-linear amplification when multiple pillars are stressed
+  const amplifier = 1 + (highStressCount / stressors.length) * 0.4;
+  const cascadingInstabilityScore = Math.min(100, avgStress * amplifier);
+
+  const weeklyIndex =
+    0.25 * waterScarcityScore +
+    0.20 * hydrologicalAnomalyScore +
+    0.15 * evaporativeDemandScore +
+    0.15 * infrastructureRiskScore +
+    0.15 * foodSecurityScore +
+    0.10 * cascadingInstabilityScore;
+
+  return {
+    waterScarcityScore,
+    hydrologicalAnomalyScore,
+    evaporativeDemandScore,
+    infrastructureRiskScore,
+    foodSecurityScore,
+    cascadingInstabilityScore,
+    weeklyIndex,
+  };
+}
+
 // ---------- Mock Data Generation ----------
 
 function getWeekDate(weeksAgo: number): { start: string; end: string } {

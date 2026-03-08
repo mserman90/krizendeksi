@@ -28,6 +28,7 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
   const [alertThreshold, setAlertThreshold] = useState(60);
   const [saving, setSaving] = useState(false);
   const [trendKey, setTrendKey] = useState(0);
+  const [method, setMethod] = useState<"hydro" | "nato">("hydro");
 
   useEffect(() => {
     hydro.reset();

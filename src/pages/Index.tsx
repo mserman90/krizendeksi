@@ -165,7 +165,25 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Row 5: Score Breakdown + Basin Info */}
+        {/* Row 5: Hydro Data Panel (Real API Data) */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Database className="h-4 w-4" /> Hidrolojik Veriler (Open-Meteo · NASA POWER · GloFAS)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <HydroPanel
+              data={hydro.data}
+              loading={hydro.loading}
+              error={hydro.error}
+              warnings={hydro.warnings}
+              onFetch={hydro.fetch}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Row 6: Score Breakdown + Basin Info */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="pb-2">

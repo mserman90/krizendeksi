@@ -15,8 +15,12 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
 import { useCrisisAlerts } from "@/hooks/useCrisisAlerts";
 import { BASINS, type BasinConfig } from "@/lib/basinConfig";
-import { Activity, Droplets, CloudRain, Map, Database, Bell } from "lucide-react";
+import { Activity, Droplets, CloudRain, Map, Database, Bell, TrendingUp, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { saveHydroSnapshot } from "@/lib/api/snapshotApi";
+import WeeklyTrendChart from "@/components/WeeklyTrendChart";
+import { toast } from "sonner";
 
 const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
   const hydro = useHydroData();

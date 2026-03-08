@@ -1,26 +1,50 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { generateWeeklyTimeSeries, generateMockNews, getCrisisLevel } from "@/lib/mockData";
-import type { NewsItem } from "@/lib/mockData";
+import { generateWeeklyTimeSeries, generateMockNews, getCrisisLevel, computeHydroCrisisIndex } from "@/lib/mockData";
+import type { NewsItem, HydroCrisisScores } from "@/lib/mockData";
 import { fetchRssNews } from "@/lib/api/rssApi";
 import CrisisGauge from "@/components/CrisisGauge";
 import ReservoirChart from "@/components/ReservoirChart";
 import RainfallChart from "@/components/RainfallChart";
 import NewsPanel from "@/components/NewsPanel";
 import ScoreBreakdown from "@/components/ScoreBreakdown";
+import HydroCrisisBreakdown from "@/components/HydroCrisisBreakdown";
 import BasinInfo from "@/components/BasinInfo";
 import BasinMap from "@/components/BasinMap";
 import HydroPanel from "@/components/HydroPanel";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
-import { Activity, Droplets, CloudRain, Newspaper, Map, Database } from "lucide-react";
+import { Activity, Droplets, CloudRain, Newspaper, Map, Database, Zap } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const timeSeries = useMemo(() => generateWeeklyTimeSeries(12), []);
   const mockNews = useMemo(() => generateMockNews(), []);
   const latest = timeSeries[timeSeries.length - 1];
-  const { label } = getCrisisLevel(latest.scores.weeklyIndex);
   const hydro = useHydroData();
+
+  // Auto-fetch hydro data on mount
+  useEffect(() => {
+    hydro.fetch(14);
+  }, []);
+
+  // Compute hydro-based crisis scores when data is available
+  const hydroCrisis: HydroCrisisScores | null = useMemo(() => {
+    if (!hydro.data?.summary) return null;
+    const s = hydro.data.summary;
+    return computeHydroCrisisIndex({
+      totalPrecipMm: s.totalPrecipMm,
+      avgDischargeM3s: s.avgDischargeM3s,
+      avgSoilMoisture: s.avgSoilMoisture,
+      totalEvapMm: s.totalEvapMm,
+      totalSnowfallMm: s.totalSnowfallMm,
+    });
+  }, [hydro.data]);
+
+  // Use hydro crisis index if available, otherwise fall back to mock
+  const crisisValue = hydroCrisis?.weeklyIndex ?? latest.scores.weeklyIndex;
+  const { label } = getCrisisLevel(crisisValue);
+  const isHydroLive = hydroCrisis !== null;
 
   const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);

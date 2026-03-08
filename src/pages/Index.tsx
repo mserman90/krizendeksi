@@ -25,6 +25,7 @@ const Index = () => {
   const mockNews = useMemo(() => generateMockNews(), []);
   const latest = timeSeries[timeSeries.length - 1];
   const hydro = useHydroData();
+  const { alerts, loading: alertsLoading } = useCrisisAlerts();
 
   // Auto-fetch hydro data on mount
   useEffect(() => {

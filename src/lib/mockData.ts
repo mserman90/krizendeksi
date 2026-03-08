@@ -65,6 +65,61 @@ export function computeWeeklyCrisisIndex(
   return { areaScore, rainScore, newsScore, weeklyIndex };
 }
 
+// ---- Hydro-based Crisis Index (real API data) ----
+
+export interface HydroCrisisScores {
+  precipScore: number;
+  dischargeScore: number;
+  soilMoistureScore: number;
+  evapScore: number;
+  snowScore: number;
+  weeklyIndex: number;
+}
+
+export interface HydroCrisisInput {
+  totalPrecipMm: number;
+  avgDischargeM3s: number;
+  avgSoilMoisture: number;
+  totalEvapMm: number;
+  totalSnowfallMm: number;
+}
+
+/**
+ * Compute crisis index from real hydrological data.
+ * Higher index = higher crisis risk.
+ *
+ * Historical reference ranges for Fırat-Dicle basin (14-day):
+ * - Precipitation: 0–80 mm (inverted: less rain = more crisis)
+ * - Discharge: 200–2000 m³/s (inverted: less flow = more crisis)
+ * - Soil moisture: 0.05–0.45 m³/m³ (inverted: drier = more crisis)
+ * - Evapotranspiration: 0–70 mm (not inverted: more evap = more crisis)
+ * - Snowfall: 0–50 mm (inverted: less snow = less future recharge)
+ */
+export function computeHydroCrisisIndex(input: HydroCrisisInput): HydroCrisisScores {
+  const precipScore = normalize(input.totalPrecipMm, 0, 80, true);
+  const dischargeScore = normalize(input.avgDischargeM3s, 200, 2000, true);
+  const soilMoistureScore = normalize(input.avgSoilMoisture, 0.05, 0.45, true);
+  const evapScore = normalize(input.totalEvapMm, 0, 70, false);
+  const snowScore = normalize(input.totalSnowfallMm, 0, 50, true);
+
+  const weights = {
+    precip: 0.25,
+    discharge: 0.30,
+    soilMoisture: 0.20,
+    evap: 0.15,
+    snow: 0.10,
+  };
+
+  const weeklyIndex =
+    weights.precip * precipScore +
+    weights.discharge * dischargeScore +
+    weights.soilMoisture * soilMoistureScore +
+    weights.evap * evapScore +
+    weights.snow * snowScore;
+
+  return { precipScore, dischargeScore, soilMoistureScore, evapScore, snowScore, weeklyIndex };
+}
+
 // ---------- Mock Data Generation ----------
 
 function getWeekDate(weeksAgo: number): { start: string; end: string } {

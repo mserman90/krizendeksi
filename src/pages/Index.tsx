@@ -20,6 +20,7 @@ const Index = () => {
   const mockNews = useMemo(() => generateMockNews(), []);
   const latest = timeSeries[timeSeries.length - 1];
   const { label } = getCrisisLevel(latest.scores.weeklyIndex);
+  const hydro = useHydroData();
 
   const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);

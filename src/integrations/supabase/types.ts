@@ -14,7 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      crisis_alerts: {
+        Row: {
+          created_at: string
+          crisis_index: number
+          id: string
+          level: string
+          summary: Json | null
+          threshold: number
+        }
+        Insert: {
+          created_at?: string
+          crisis_index: number
+          id?: string
+          level: string
+          summary?: Json | null
+          threshold?: number
+        }
+        Update: {
+          created_at?: string
+          crisis_index?: number
+          id?: string
+          level?: string
+          summary?: Json | null
+          threshold?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

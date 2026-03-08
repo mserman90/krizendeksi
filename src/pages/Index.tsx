@@ -82,11 +82,11 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
   const isHydroLive = hydroCrisis !== null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <CrisisAlertBanner crisisIndex={crisisValue} threshold={alertThreshold} />
 
       {/* Row 1: Crisis Gauge + Score Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         <Card className="dashboard-card">
           <CardHeader className="pb-2">
             <CardTitle className="section-title flex items-center gap-2">
@@ -225,7 +225,7 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       </Card>
 
       {/* Row 5: Score Breakdown + Basin Info */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <Card className="dashboard-card">
           <CardHeader className="pb-2">
             <CardTitle className="section-title flex items-center gap-2">

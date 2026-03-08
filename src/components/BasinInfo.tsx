@@ -1,31 +1,33 @@
 import { MapPin, Waves, Mountain } from "lucide-react";
+import type { BasinConfig } from "@/lib/basinConfig";
 
-const BasinInfo = () => {
-  const facts = [
-    { icon: MapPin, label: "Havza", value: "Fırat-Dicle (Mezopotamya)" },
-    { icon: Waves, label: "Ana Baraj", value: "Atatürk Barajı (Şanlıurfa)" },
-    { icon: Mountain, label: "Havza Alanı", value: "≈ 879.790 km²" },
-    { icon: Waves, label: "Fırat Uzunluğu", value: "2.800 km" },
-    { icon: Waves, label: "Dicle Uzunluğu", value: "1.900 km" },
-  ];
+interface Props {
+  basin: BasinConfig;
+}
+
+const BasinInfo = ({ basin }: Props) => {
+  const icons = [MapPin, Waves, Mountain, Waves, Waves];
 
   return (
     <div className="space-y-3">
-      {facts.map(({ icon: Icon, label, value }, i) => (
-        <div key={i} className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-            <Icon className="h-4 w-4 text-primary" />
+      {basin.facts.map(({ label, value }, i) => {
+        const Icon = icons[i % icons.length];
+        return (
+          <div key={i} className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+              <Icon className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">{label}</p>
+              <p className="text-sm font-medium">{value}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-sm font-medium">{value}</p>
-          </div>
-        </div>
-      ))}
-      <p className="text-[10px] text-muted-foreground mt-4 border-t border-border pt-3">
-        Veri kaynakları: Sentinel-2 (NDWI su maskeleme), CHIRPS (yağış), RSS/HTML haber akışları. 
-        GEE backend entegrasyonu için Lovable Cloud kullanılabilir.
-      </p>
+        );
+      })}
+      <div className="text-[10px] text-muted-foreground mt-4 border-t border-border pt-3 space-y-1">
+        <p>Paylaşan ülkeler: {basin.countries.join(", ")}</p>
+        <p>Veri kaynakları: Open-Meteo, NASA POWER, GloFAS</p>
+      </div>
     </div>
   );
 };

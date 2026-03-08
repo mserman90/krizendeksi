@@ -128,101 +128,122 @@ export function computeHydroCrisisIndex(input: HydroCrisisInput): HydroCrisisSco
   };
 }
 
-// ---- NATO CCSIA-Based Vulnerability Index ----
+// ---- NATO 360° Security / 7 Baseline Requirements (7BLR) Vulnerability Index ----
 
 /**
- * NATO Climate Change and Security Impact Assessment (CCSIA) inspired
- * 6-pillar vulnerability index.
+ * NATO "360-degree security" concept and 7 Baseline Requirements for
+ * National Resilience (7BLR) standards-based Allied Risk Score.
  *
- * Based on NATO's Climate Change and Security Action Plan (2021),
- * NATO CCSIA Third Edition (2024), and STO-TR-SAS-182 methodology.
+ * S_Allied = (CCSRT × 0.25) + (PACA × 0.25) + (RSI × 0.20) + (BlackStart × 0.20) + (Kinetic × 0.10)
  *
- * NATO treats climate change as a "threat multiplier" across resilience
- * pillars. This index maps hydrological data to NATO's security framework:
+ * References:
+ * - NATO CCSIA Third Edition (2024)
+ * - NATO Climate Change Action Plan (2021)
+ * - STO-TR-SAS-182
+ * - NATO 7 Baseline Requirements for National Resilience
  *
- * 1. Water Scarcity Stress (25%) — Food/water resilience baseline
- * 2. Hydrological Anomaly (20%) — Threat assessment: deviation from normal
- * 3. Evaporative Demand Pressure (15%) — Environmental stress cascading
- * 4. Critical Infrastructure Risk (15%) — Civil transport & energy resilience
- * 5. Agricultural & Food Security (15%) — Food security, livelihood disruption
- * 6. Cascading Instability Potential (10%) — Threat multiplier / displacement risk
+ * Five sub-indices mapped to hydrological/meteorological data:
+ *
+ * 1. CCSRT — Climate Change Security Risk Threshold (25%)
+ *    Integrated climate-water stress crossing critical security thresholds.
+ *    7BLR mapping: Food & Water Supply, Energy Supply
+ *
+ * 2. PACA — Predictive Adaptive Capacity Assessment (25%)
+ *    System's ability to absorb shocks — deviation from norms signals low adaptive capacity.
+ *    7BLR mapping: Resilient Civil Communications, Continuity of Government
+ *
+ * 3. RSI — Resource Scarcity Index (20%)
+ *    Multi-resource depletion indicator — soil, snow reserves, precipitation deficit.
+ *    7BLR mapping: Food & Water Supply, Resilient Energy Supply
+ *
+ * 4. BlackStart — Critical Infrastructure Failure Potential (20%)
+ *    Risk of cascading infrastructure failure under compound environmental stress.
+ *    7BLR mapping: Civil Transport, Energy Supply, Mass Casualty Management
+ *
+ * 5. Kinetic — Conflict & Displacement Trigger Potential (10%)
+ *    Non-linear amplification when multiple stressors exceed thresholds simultaneously.
+ *    7BLR mapping: Uncontrolled Movement of People, Continuity of Government
  */
 
 export interface NatoCrisisScores {
-  waterScarcityScore: number;       // Pillar 1
-  hydrologicalAnomalyScore: number; // Pillar 2
-  evaporativeDemandScore: number;   // Pillar 3
-  infrastructureRiskScore: number;  // Pillar 4
-  foodSecurityScore: number;        // Pillar 5
-  cascadingInstabilityScore: number; // Pillar 6
-  weeklyIndex: number;
+  ccsrtScore: number;      // Climate Change Security Risk Threshold
+  pacaScore: number;       // Predictive Adaptive Capacity Assessment
+  rsiScore: number;        // Resource Scarcity Index
+  blackStartScore: number; // Critical Infrastructure Failure Potential
+  kineticScore: number;    // Conflict & Displacement Trigger
+  weeklyIndex: number;     // S_Allied
 }
 
 export function computeNatoCrisisIndex(input: HydroCrisisInput): NatoCrisisScores {
-  // Pillar 1: Water Scarcity Stress (25%)
-  // Combines precipitation deficit and discharge — NATO's core "food and water resources" baseline
+  // === CCSRT — Climate Change Security Risk Threshold (25%) ===
+  // Crosses when water availability falls below security-critical levels
+  // Combines: precipitation deficit, discharge deficit, evapotranspiration pressure
   const precipDeficit = normalize(input.totalPrecipMm, 0, 80, true);
   const dischargeDeficit = normalize(input.avgDischargeM3s, 200, 2000, true);
-  const waterScarcityScore = 0.55 * precipDeficit + 0.45 * dischargeDeficit;
+  const evapPressure = normalize(input.totalEvapMm, 0, 70, false);
+  const ccsrtScore = 0.40 * precipDeficit + 0.35 * dischargeDeficit + 0.25 * evapPressure;
 
-  // Pillar 2: Hydrological Anomaly (20%)
-  // NATO emphasizes deviation from historical norms as threat indicator
-  // Combines discharge anomaly ratio with soil moisture departure
+  // === PACA — Predictive Adaptive Capacity Assessment (25%) ===
+  // How far current conditions deviate from historical baselines
+  // Large deviations = system operating outside adaptive envelope
   const anomalyRatio = normalize(input.dischargeAnomalyRatio, 0.3, 1.5, true);
   const soilDeparture = normalize(input.avgSoilMoisture, 0.05, 0.45, true);
-  const hydrologicalAnomalyScore = 0.6 * anomalyRatio + 0.4 * soilDeparture;
+  const humidityDeparture = normalize(input.avgHumidity, 20, 90, true);
+  // Variance-based: higher variance across indicators = lower adaptive capacity
+  const pacaIndicators = [anomalyRatio, soilDeparture, humidityDeparture];
+  const pacaMean = pacaIndicators.reduce((a, b) => a + b, 0) / pacaIndicators.length;
+  const pacaVariance = pacaIndicators.reduce((sum, v) => sum + Math.pow(v - pacaMean, 2), 0) / pacaIndicators.length;
+  // Weighted combination of mean stress + variance amplification
+  const pacaScore = Math.min(100, pacaMean * (1 + Math.sqrt(pacaVariance) / 100));
 
-  // Pillar 3: Evaporative Demand Pressure (15%)
-  // NATO CCSIA highlights cascading environmental stress — heat + evap + wind
-  const evap = normalize(input.totalEvapMm, 0, 70, false);
-  const solar = normalize(input.avgSolarRadiation, 1, 8, false);
-  const wind = normalize(input.avgWindSpeed, 0, 60, false);
-  const evaporativeDemandScore = 0.45 * evap + 0.30 * solar + 0.25 * wind;
-
-  // Pillar 4: Critical Infrastructure Risk (15%)
-  // NATO resilience baseline: extreme flow conditions threaten civil transport,
-  // energy (hydropower), and infrastructure
-  // Both very low and very high discharge are risky
-  const lowFlowRisk = normalize(input.avgDischargeM3s, 200, 800, true);
-  const humidityStress = normalize(input.avgHumidity, 20, 90, true);
-  const infrastructureRiskScore = 0.6 * lowFlowRisk + 0.4 * humidityStress;
-
-  // Pillar 5: Agricultural & Food Security (15%)
-  // NATO CCSIA: food security directly linked to soil moisture, precipitation, snow recharge
+  // === RSI — Resource Scarcity Index (20%) ===
+  // Multi-dimensional resource depletion across water, soil, and snow reserves
   const soilDry = normalize(input.avgSoilMoisture, 0.05, 0.45, true);
-  const snowRecharge = normalize(input.totalSnowfallMm, 0, 50, true);
+  const snowReserve = normalize(input.totalSnowfallMm, 0, 50, true);
   const rainDeficit = normalize(input.totalPrecipMm, 0, 80, true);
-  const foodSecurityScore = 0.40 * soilDry + 0.35 * rainDeficit + 0.25 * snowRecharge;
+  const windDrying = normalize(input.avgWindSpeed, 0, 60, false);
+  const rsiScore = 0.30 * soilDry + 0.30 * rainDeficit + 0.25 * snowReserve + 0.15 * windDrying;
 
-  // Pillar 6: Cascading Instability Potential (10%)
-  // NATO's "threat multiplier" concept: when multiple stressors align,
-  // risk of displacement, conflict and cascading failure rises non-linearly
-  const stressors = [precipDeficit, dischargeDeficit, anomalyRatio, soilDeparture, evap];
-  const highStressCount = stressors.filter(s => s > 65).length;
-  const avgStress = stressors.reduce((a, b) => a + b, 0) / stressors.length;
-  // Non-linear amplification when multiple pillars are stressed
-  const amplifier = 1 + (highStressCount / stressors.length) * 0.4;
-  const cascadingInstabilityScore = Math.min(100, avgStress * amplifier);
+  // === BlackStart — Critical Infrastructure Failure Potential (20%) ===
+  // Risk of cascading failure: hydropower, irrigation, civil transport
+  // Named after NATO grid resilience concept — can systems "black start" after failure?
+  const lowFlowRisk = normalize(input.avgDischargeM3s, 200, 800, true);
+  const solarLoad = normalize(input.avgSolarRadiation, 1, 8, false);
+  const evapDemand = normalize(input.totalEvapMm, 0, 70, false);
+  // Compound stress: when multiple infrastructure-critical factors align
+  const infraStressors = [lowFlowRisk, solarLoad, evapDemand];
+  const infraAbove60 = infraStressors.filter(s => s > 60).length;
+  const infraMean = infraStressors.reduce((a, b) => a + b, 0) / infraStressors.length;
+  // Step function: compound risk escalates when 2+ factors are stressed
+  const compoundMultiplier = infraAbove60 >= 2 ? 1.15 : 1.0;
+  const blackStartScore = Math.min(100, infraMean * compoundMultiplier);
 
+  // === Kinetic — Conflict & Displacement Trigger Potential (10%) ===
+  // Non-linear "threat multiplier": when ALL pillars are stressed, displacement/conflict risk spikes
+  const allScores = [ccsrtScore, pacaScore, rsiScore, blackStartScore];
+  const allMean = allScores.reduce((a, b) => a + b, 0) / allScores.length;
+  const highStressCount = allScores.filter(s => s > 65).length;
+  // Exponential amplification based on concurrent stress count
+  const kineticAmplifier = 1 + Math.pow(highStressCount / allScores.length, 1.5) * 0.5;
+  const kineticScore = Math.min(100, allMean * kineticAmplifier);
+
+  // === S_Allied — Weighted Allied Risk Score ===
   const weeklyIndex =
-    0.25 * waterScarcityScore +
-    0.20 * hydrologicalAnomalyScore +
-    0.15 * evaporativeDemandScore +
-    0.15 * infrastructureRiskScore +
-    0.15 * foodSecurityScore +
-    0.10 * cascadingInstabilityScore;
+    0.25 * ccsrtScore +
+    0.25 * pacaScore +
+    0.20 * rsiScore +
+    0.20 * blackStartScore +
+    0.10 * kineticScore;
 
   return {
-    waterScarcityScore,
-    hydrologicalAnomalyScore,
-    evaporativeDemandScore,
-    infrastructureRiskScore,
-    foodSecurityScore,
-    cascadingInstabilityScore,
+    ccsrtScore,
+    pacaScore,
+    rsiScore,
+    blackStartScore,
+    kineticScore,
     weeklyIndex,
   };
 }
-
 // ---------- Mock Data Generation ----------
 
 function getWeekDate(weeksAgo: number): { start: string; end: string } {

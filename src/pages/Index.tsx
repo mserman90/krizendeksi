@@ -10,6 +10,7 @@ import NewsPanel from "@/components/NewsPanel";
 import ScoreBreakdown from "@/components/ScoreBreakdown";
 import BasinInfo from "@/components/BasinInfo";
 import BasinMap from "@/components/BasinMap";
+import ThemeToggle from "@/components/ThemeToggle";
 import { Activity, Droplets, CloudRain, Newspaper, Map } from "lucide-react";
 
 const Index = () => {
@@ -49,14 +50,17 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <Activity className="h-6 w-6 text-primary" />
-          <div>
-            <h1 className="text-lg font-bold tracking-tight">Fırat-Dicle Haftalık OSINT İzleme Paneli</h1>
-            <p className="text-xs text-muted-foreground">
-              {latest.metrics.weekStart} — {latest.metrics.weekEnd} · Durum: {label}
-            </p>
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Activity className="h-6 w-6 text-primary" />
+            <div>
+              <h1 className="text-lg font-bold tracking-tight">Fırat-Dicle Haftalık OSINT İzleme Paneli</h1>
+              <p className="text-xs text-muted-foreground">
+                {latest.metrics.weekStart} — {latest.metrics.weekEnd} · Durum: {label}
+              </p>
+            </div>
           </div>
+          <ThemeToggle />
         </div>
       </header>
 

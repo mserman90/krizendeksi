@@ -1,0 +1,1 @@
+DROP POLICY "Service role insert" ON public.hydro_snapshots;

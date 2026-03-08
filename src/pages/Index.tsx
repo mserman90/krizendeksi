@@ -15,12 +15,18 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
 import { useCrisisAlerts } from "@/hooks/useCrisisAlerts";
 import { BASINS, type BasinConfig } from "@/lib/basinConfig";
-import { Activity, Droplets, CloudRain, Map, Database, Bell } from "lucide-react";
+import { Activity, Droplets, CloudRain, Map, Database, Bell, TrendingUp, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { saveHydroSnapshot } from "@/lib/api/snapshotApi";
+import WeeklyTrendChart from "@/components/WeeklyTrendChart";
+import { toast } from "sonner";
 
 const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
   const hydro = useHydroData();
   const [alertThreshold, setAlertThreshold] = useState(60);
+  const [saving, setSaving] = useState(false);
+  const [trendKey, setTrendKey] = useState(0);
 
   useEffect(() => {
     hydro.reset();
@@ -43,6 +49,35 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
     });
   }, [hydro.data]);
 
+  const handleSave = useCallback(async () => {
+    if (!hydro.data?.summary || !hydroCrisis) return;
+    setSaving(true);
+    try {
+      await saveHydroSnapshot({
+        basinId: basin.id,
+        crisisIndex: Math.round(hydroCrisis.weeklyIndex * 10) / 10,
+        summary: {
+          totalPrecipMm: hydro.data.summary.totalPrecipMm,
+          avgDischargeM3s: hydro.data.summary.avgDischargeM3s,
+          avgSoilMoisture: hydro.data.summary.avgSoilMoisture,
+          totalEvapMm: hydro.data.summary.totalEvapMm,
+          totalSnowfallMm: hydro.data.summary.totalSnowfallMm,
+          avgHumidity: hydro.data.summary.avgHumidity,
+          avgWindSpeed: hydro.data.summary.avgWindSpeed,
+          avgSolarRadiation: hydro.data.summary.avgSolarRadiation,
+          dischargeAnomalyRatio: hydro.data.summary.dischargeAnomalyRatio,
+        },
+        periodStart: hydro.data.summary.periodStart,
+        periodEnd: hydro.data.summary.periodEnd,
+      });
+      toast.success("Veriler kaydedildi");
+      setTrendKey((k) => k + 1);
+    } catch (e: any) {
+      toast.error("Kaydetme hatası: " + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }, [hydro.data, hydroCrisis, basin.id]);
   const crisisValue = hydroCrisis?.weeklyIndex ?? 50;
   const isHydroLive = hydroCrisis !== null;
 
@@ -160,7 +195,31 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
         </CardContent>
       </Card>
 
-      {/* Row 4: Score Breakdown + Basin Info */}
+      {/* Row 4: Save & Weekly Trend */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" /> Haftalık Trend Karşılaştırması
+            <div className="ml-auto">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs gap-1.5"
+                onClick={handleSave}
+                disabled={saving || !isHydroLive}
+              >
+                <Save className="h-3.5 w-3.5" />
+                {saving ? "Kaydediliyor..." : "Verileri Kaydet"}
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <WeeklyTrendChart key={trendKey} basinId={basin.id} />
+        </CardContent>
+      </Card>
+
+      {/* Row 5: Score Breakdown + Basin Info */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">

@@ -9,6 +9,7 @@ import RainfallChart from "@/components/RainfallChart";
 import NewsPanel from "@/components/NewsPanel";
 import ScoreBreakdown from "@/components/ScoreBreakdown";
 import HydroCrisisBreakdown from "@/components/HydroCrisisBreakdown";
+import MethodologyDialog from "@/components/MethodologyDialog";
 import BasinInfo from "@/components/BasinInfo";
 import BasinMap from "@/components/BasinMap";
 import HydroPanel from "@/components/HydroPanel";
@@ -120,6 +121,7 @@ const Index = () => {
                 <Activity className="h-4 w-4" /> Kriz Endeksi
                 {isHydroLive && <Badge variant="secondary" className="text-[10px]">Canlı</Badge>}
                 {hydro.loading && <span className="text-[10px] text-muted-foreground animate-pulse">Yükleniyor...</span>}
+                <MethodologyDialog />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">

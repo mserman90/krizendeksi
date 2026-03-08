@@ -41,6 +41,60 @@ export type Database = {
         }
         Relationships: []
       }
+      hydro_snapshots: {
+        Row: {
+          avg_discharge_m3s: number
+          avg_humidity: number
+          avg_soil_moisture: number
+          avg_solar_radiation: number
+          avg_wind_speed: number
+          basin_id: string
+          created_at: string
+          crisis_index: number
+          discharge_anomaly_ratio: number
+          id: string
+          period_end: string
+          period_start: string
+          total_evap_mm: number
+          total_precip_mm: number
+          total_snowfall_mm: number
+        }
+        Insert: {
+          avg_discharge_m3s?: number
+          avg_humidity?: number
+          avg_soil_moisture?: number
+          avg_solar_radiation?: number
+          avg_wind_speed?: number
+          basin_id: string
+          created_at?: string
+          crisis_index: number
+          discharge_anomaly_ratio?: number
+          id?: string
+          period_end: string
+          period_start: string
+          total_evap_mm?: number
+          total_precip_mm?: number
+          total_snowfall_mm?: number
+        }
+        Update: {
+          avg_discharge_m3s?: number
+          avg_humidity?: number
+          avg_soil_moisture?: number
+          avg_solar_radiation?: number
+          avg_wind_speed?: number
+          basin_id?: string
+          created_at?: string
+          crisis_index?: number
+          discharge_anomaly_ratio?: number
+          id?: string
+          period_end?: string
+          period_start?: string
+          total_evap_mm?: number
+          total_precip_mm?: number
+          total_snowfall_mm?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

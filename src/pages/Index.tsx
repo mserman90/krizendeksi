@@ -122,8 +122,29 @@ const Index = () => {
                 {hydro.loading && <span className="text-[10px] text-muted-foreground animate-pulse">Yükleniyor...</span>}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex justify-center">
-              <CrisisGauge value={crisisValue} />
+            <CardContent className="space-y-3">
+              <div className="flex justify-center">
+                <CrisisGauge value={crisisValue} />
+              </div>
+              <div className="space-y-1.5 pt-2 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">Uyarı Eşiği</span>
+                  <span className="text-xs font-mono font-semibold">{alertThreshold}</span>
+                </div>
+                <input
+                  type="range"
+                  min={20}
+                  max={90}
+                  step={5}
+                  value={alertThreshold}
+                  onChange={(e) => setAlertThreshold(Number(e.target.value))}
+                  className="w-full h-1.5 accent-primary cursor-pointer"
+                />
+                <div className="flex justify-between text-[9px] text-muted-foreground">
+                  <span>20</span>
+                  <span>90</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
 

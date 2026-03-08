@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Info, Droplets, Waves, Leaf, Thermometer, Snowflake, Wind, Sun, TrendingDown, CloudRain, Shield, Building2, Wheat, AlertTriangle } from "lucide-react";
+import { Info, Droplets, Waves, Leaf, Thermometer, Snowflake, Wind, Sun, TrendingDown, CloudRain, Shield, ShieldAlert, Brain, PackageOpen, Zap, Crosshair } from "lucide-react";
 
 const hydroComponents = [
   { icon: Waves, label: "Nehir Debisi (Mutlak)", weight: 20, range: "200–2000 m³/s", invert: true, source: "Open-Meteo Flood (GloFAS)", desc: "Fırat ve Dicle nehirlerindeki ortalama debi. Debi düştükçe su stresi artar ve kriz riski yükselir." },
@@ -16,15 +16,14 @@ const hydroComponents = [
 ];
 
 const natoComponents = [
-  { icon: Droplets, label: "Su Kıtlığı Stresi", weight: 25, desc: "Yağış açığı (%55) ve nehir debisi (%45) birleşimi. NATO'nun gıda/su dayanıklılık temel gereksinimi doğrultusunda hesaplanır. Su kıtlığı, havzadaki tüm güvenlik risklerinin temel tetikleyicisidir.", source: "NATO CCSIA 2024 — Food and Water Resources" },
-  { icon: TrendingDown, label: "Hidrolojik Anomali", weight: 20, desc: "Debi anomali oranı (%60) ve toprak nemi sapması (%40). NATO, tarihsel normlardan sapmaları tehdit göstergesi olarak değerlendirir. Normal dışı koşullar erken uyarı sinyali verir.", source: "NATO CCSIA 2024 — Threat Assessment" },
-  { icon: Thermometer, label: "Buharlaşma Baskısı", weight: 15, desc: "ET₀ (%45), güneş radyasyonu (%30) ve rüzgar hızı (%25). Kademeli çevresel stres — ısı, buharlaşma ve rüzgarın birleşik etkisi su kaybını hızlandırır.", source: "NATO CCSIA 2024 — Environmental Cascading" },
-  { icon: Building2, label: "Kritik Altyapı Riski", weight: 15, desc: "Düşük akış riski (%60) ve nem stresi (%40). NATO dayanıklılık temeli: düşük akış koşulları hidroelektrik üretimini, sivil ulaşımı ve enerji altyapısını tehdit eder.", source: "NATO CCSIA 2024 — Resilience & Civil Preparedness" },
-  { icon: Wheat, label: "Gıda Güvenliği", weight: 15, desc: "Toprak kuruluğu (%40), yağış açığı (%35) ve kar deposu (%25). Tarımsal üretim kapasitesini doğrudan etkileyen faktörler — NATO gıda güvenliği değerlendirmesi.", source: "NATO CCSIA 2024 — Food Security" },
-  { icon: AlertTriangle, label: "Kademeli İstikrarsızlık", weight: 10, desc: "Çoklu stres faktörlerinin eşzamanlı tetiklenmesi durumunda doğrusal olmayan risk artışı. NATO'nun 'tehdit çarpanı' (threat multiplier) konsepti: birden fazla sütun stres altındayken risk katlanarak artar.", source: "NATO CCSIA 2024 — Threat Multiplier Concept" },
+  { icon: ShieldAlert, label: "CCSRT", fullLabel: "İklim Güvenlik Risk Eşiği", weight: 25, desc: "Yağış açığı (%40), debi düşüşü (%35) ve buharlaşma baskısı (%25) birleşimi. Su kullanılabilirliği güvenlik-kritik eşiklerin altına düştüğünde tetiklenir. 7BLR: Gıda/Su Temini, Enerji Arzı.", source: "NATO CCSIA 2024 — Food & Water Resources, Energy Supply" },
+  { icon: Brain, label: "PACA", fullLabel: "Öngörücü Adaptif Kapasite", weight: 25, desc: "Debi anomali oranı, toprak nemi sapması ve nem düşüşü göstergelerinin ortalaması + varyans amplifikasyonu. Büyük sapma = düşük adaptif kapasite. Varyans tabanlı hesaplama: göstergeler arası tutarsızlık riski artırır. 7BLR: Sivil İletişim, Yönetim Sürekliliği.", source: "NATO 7BLR — Adaptive Capacity / Continuity of Government" },
+  { icon: PackageOpen, label: "RSI", fullLabel: "Kaynak Kıtlığı Endeksi", weight: 20, desc: "Toprak kuruluğu (%30), yağış açığı (%30), kar deposu (%25) ve rüzgar kurutma etkisi (%15). Çok boyutlu kaynak tükenme göstergesi. 7BLR: Gıda/Su Temini, Enerji Arzı.", source: "NATO CCSIA 2024 — Resource Scarcity / Food Security" },
+  { icon: Zap, label: "BlackStart", fullLabel: "Altyapı Çöküş Potansiyeli", weight: 20, desc: "Düşük akış riski, güneş yükü ve buharlaşma baskısının bileşik stresi. 2+ faktör eşzamanlı olarak >60 skora ulaştığında ×1.15 bileşik çarpan. NATO şebeke dayanıklılık konseptinden esinlenmiştir. 7BLR: Sivil Ulaşım, Enerji, Kitle Kayıp Yönetimi.", source: "NATO 7BLR — Civil Transport, Energy Supply, Mass Casualty" },
+  { icon: Crosshair, label: "Kinetic", fullLabel: "Çatışma & Yerinden Edilme Tetikleyicisi", weight: 10, desc: "Diğer 4 sütunun ortalama stresine üstel amplifikasyon (concurrent stress^1.5 × 0.5). Tüm sütunlar stres altındayken risk katlanarak artar. NATO 'threat multiplier' konsepti. 7BLR: Kontrolsüz Nüfus Hareketleri, Yönetim Sürekliliği.", source: "NATO CCSIA 2024 — Threat Multiplier / Cascading Risk" },
 ];
 
-const ComponentList = ({ items }: { items: typeof hydroComponents | typeof natoComponents }) => (
+const HydroComponentList = ({ items }: { items: typeof hydroComponents }) => (
   <div className="space-y-2">
     {items.map((c) => {
       const Icon = c.icon;
@@ -39,18 +38,32 @@ const ComponentList = ({ items }: { items: typeof hydroComponents | typeof natoC
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">{c.desc}</p>
           <div className="flex flex-wrap gap-3 text-[10px]">
-            {"range" in c && (
-              <span className="text-muted-foreground">
-                📊 Aralık: <span className="font-mono">{c.range}</span>
-              </span>
-            )}
-            {"invert" in c && (
-              <span className="text-muted-foreground">
-                {c.invert ? "🔄 Ters çevrilmiş" : "➡️ Normal yönlü"}
-              </span>
-            )}
+            <span className="text-muted-foreground">📊 Aralık: <span className="font-mono">{c.range}</span></span>
+            <span className="text-muted-foreground">{c.invert ? "🔄 Ters çevrilmiş" : "➡️ Normal yönlü"}</span>
             <span className="text-muted-foreground">📡 {c.source}</span>
           </div>
+        </div>
+      );
+    })}
+  </div>
+);
+
+const NatoComponentList = ({ items }: { items: typeof natoComponents }) => (
+  <div className="space-y-2">
+    {items.map((c) => {
+      const Icon = c.icon;
+      return (
+        <div key={c.label} className="rounded-lg border border-border p-3 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Icon className="h-4 w-4 text-muted-foreground" />
+              <span className="font-bold font-mono">{c.label}</span>
+              <span className="text-[10px] text-muted-foreground">· {c.fullLabel}</span>
+            </div>
+            <span className="text-xs font-mono font-bold text-primary">{c.weight}%</span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">{c.desc}</p>
+          <div className="text-[10px] text-muted-foreground">📡 {c.source}</div>
         </div>
       );
     })}
@@ -78,6 +91,27 @@ const CrisisLevels = () => (
   </div>
 );
 
+const NatoThreatLevels = () => (
+  <div className="grid grid-cols-2 gap-2">
+    <div className="rounded-lg border p-2.5 bg-green-500/10 border-green-500/30">
+      <p className="text-xs font-semibold text-green-700 dark:text-green-400">0–24: ALPHA</p>
+      <p className="text-[10px] text-muted-foreground">Normal operasyonel durum</p>
+    </div>
+    <div className="rounded-lg border p-2.5 bg-yellow-500/10 border-yellow-500/30">
+      <p className="text-xs font-semibold text-yellow-700 dark:text-yellow-400">25–49: BRAVO</p>
+      <p className="text-[10px] text-muted-foreground">Artan tehdit seviyesi, izleme gerekli</p>
+    </div>
+    <div className="rounded-lg border p-2.5 bg-orange-500/10 border-orange-500/30">
+      <p className="text-xs font-semibold text-orange-700 dark:text-orange-400">50–74: CHARLIE</p>
+      <p className="text-[10px] text-muted-foreground">Yüksek tehdit, proaktif önlemler</p>
+    </div>
+    <div className="rounded-lg border p-2.5 bg-red-500/10 border-red-500/30">
+      <p className="text-xs font-semibold text-red-700 dark:text-red-400">75–100: DELTA</p>
+      <p className="text-[10px] text-muted-foreground">Kritik tehdit, acil müdahale</p>
+    </div>
+  </div>
+);
+
 const MethodologyDialog = () => {
   return (
     <Dialog>
@@ -98,7 +132,7 @@ const MethodologyDialog = () => {
               <Droplets className="h-3.5 w-3.5" /> Hidrolojik Yöntem
             </TabsTrigger>
             <TabsTrigger value="nato" className="flex-1 gap-1 text-xs">
-              <Shield className="h-3.5 w-3.5" /> NATO CCSIA Yöntemi
+              <Shield className="h-3.5 w-3.5" /> NATO 360° / 7BLR
             </TabsTrigger>
           </TabsList>
 
@@ -138,7 +172,7 @@ const MethodologyDialog = () => {
 
             <section className="space-y-3">
               <h3 className="font-semibold text-base">Bileşenler ({hydroComponents.length})</h3>
-              <ComponentList items={hydroComponents} />
+              <HydroComponentList items={hydroComponents} />
             </section>
 
             <section className="space-y-2">
@@ -156,49 +190,65 @@ const MethodologyDialog = () => {
             </section>
           </TabsContent>
 
-          {/* NATO CCSIA Method Tab */}
+          {/* NATO 360° / 7BLR Tab */}
           <TabsContent value="nato" className="space-y-5 text-sm">
             <section className="space-y-2">
               <h3 className="font-semibold text-base flex items-center gap-2">
-                <Shield className="h-4 w-4 text-primary" /> NATO CCSIA Yöntemi
+                <Shield className="h-4 w-4 text-primary" /> NATO 360° Güvenlik / 7BLR Yöntemi
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                NATO İklim Değişikliği ve Güvenlik Etki Değerlendirmesi (CCSIA) çerçevesine dayanan
-                <strong> 6 sütunlu kırılganlık endeksi</strong>. NATO, iklim değişikliğini bir
-                <strong> "tehdit çarpanı" (threat multiplier)</strong> olarak ele alır ve güvenlik
-                risklerini dayanıklılık sütunları üzerinden değerlendirir.
+                NATO'nun <strong>"360 derece güvenlik"</strong> konsepti ve <strong>7 Temel Ulusal Direnç
+                (7 Baseline Requirements for National Resilience)</strong> standartlarına dayalı
+                bütünleşik risk skoru. İklim değişikliğini bir <strong>"tehdit çarpanı" (threat multiplier)</strong>
+                olarak ele alır.
               </p>
-              <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground">
-                <p className="font-medium text-foreground mb-1">NATO Yaklaşımı vs Hidrolojik Yaklaşım:</p>
-                <p>Hidrolojik yöntem her parametreyi bağımsız değerlendirir. NATO yöntemi ise aynı verileri
-                <strong> güvenlik sütunlarına</strong> gruplar ve çoklu stres faktörlerinin eşzamanlı
-                tetiklenmesinde <strong>doğrusal olmayan risk artışı</strong> (cascading instability) uygular.</p>
+            </section>
+
+            {/* 7BLR Overview */}
+            <section className="space-y-2">
+              <h3 className="font-semibold text-base">7 Temel Ulusal Direnç (7BLR)</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[10px]">
+                {[
+                  "1. Sivil yönetimin sürekliliği",
+                  "2. Dayanıklı enerji arzı",
+                  "3. Kontrolsüz nüfus hareketlerini yönetme",
+                  "4. Dayanıklı gıda ve su kaynakları",
+                  "5. Kitle kayıplarını yönetme",
+                  "6. Dayanıklı sivil iletişim sistemleri",
+                  "7. Dayanıklı sivil ulaşım sistemleri",
+                ].map((item) => (
+                  <div key={item} className="rounded border border-border/50 p-1.5 text-muted-foreground bg-muted/30">
+                    {item}
+                  </div>
+                ))}
               </div>
             </section>
 
             <section className="space-y-2">
-              <h3 className="font-semibold text-base">Formül</h3>
+              <h3 className="font-semibold text-base">S_Allied Formülü</h3>
               <div className="rounded-lg bg-muted/50 border border-border p-3 font-mono text-xs leading-relaxed">
-                <p className="text-muted-foreground mb-1">NATO Kırılganlık Endeksi =</p>
-                <p className="pl-4">0.25 × SuKıtlığı + 0.20 × HidrolojikAnomali +</p>
-                <p className="pl-4">0.15 × BuharlaşmaBaskısı + 0.15 × AltyapıRiski +</p>
-                <p className="pl-4">0.15 × GıdaGüvenliği + 0.10 × Kademelİİstikrarsızlık</p>
+                <p className="text-muted-foreground mb-1">S_Allied =</p>
+                <p className="pl-4">(CCSRT × 0.25) + (PACA × 0.25) +</p>
+                <p className="pl-4">(RSI × 0.20) + (BlackStart × 0.20) + (Kinetic × 0.10)</p>
               </div>
-              <div className="rounded-lg bg-muted/50 border border-border p-3 font-mono text-xs leading-relaxed mt-2">
-                <p className="text-muted-foreground mb-1">Kademeli İstikrarsızlık (non-linear) =</p>
-                <p className="pl-4">amplifier = 1 + (yüksekStresOranı × 0.4)</p>
-                <p className="pl-4">skor = min(100, ortStres × amplifier)</p>
+              <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground mt-2">
+                <p className="font-medium text-foreground mb-1">Anahtar Farklar:</p>
+                <ul className="space-y-1 list-disc pl-3">
+                  <li><strong>Varyans tabanlı PACA:</strong> Göstergeler arası tutarsızlık adaptif kapasite düşüklüğünü gösterir</li>
+                  <li><strong>BlackStart bileşik çarpan:</strong> 2+ altyapı faktörü &gt;60 olduğunda ×1.15 amplifikasyon</li>
+                  <li><strong>Kinetic üstel çarpan:</strong> Eşzamanlı stres sayısının ^1.5 üssel artışı</li>
+                </ul>
               </div>
             </section>
 
             <section className="space-y-3">
-              <h3 className="font-semibold text-base">Güvenlik Sütunları ({natoComponents.length})</h3>
-              <ComponentList items={natoComponents} />
+              <h3 className="font-semibold text-base">Alt Endeksler ({natoComponents.length})</h3>
+              <NatoComponentList items={natoComponents} />
             </section>
 
             <section className="space-y-2">
-              <h3 className="font-semibold text-base">Kriz Seviyeleri</h3>
-              <CrisisLevels />
+              <h3 className="font-semibold text-base">Tehdit Seviyeleri (THREATCON)</h3>
+              <NatoThreatLevels />
             </section>
 
             <section className="space-y-2">
@@ -224,12 +274,16 @@ const MethodologyDialog = () => {
                   <br />
                   <a href="https://www.coedat.nato.int/publication/researches/22-Climate_ChangeandTerrorism.pdf" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">PDF →</a>
                 </li>
+                <li>
+                  <strong>NATO 7 Baseline Requirements</strong> — National Resilience Guidelines
+                </li>
               </ul>
             </section>
 
             <section className="rounded-lg bg-muted/30 border border-border/50 p-3 text-[10px] text-muted-foreground space-y-1">
-              <p>🛡️ NATO CCSIA çerçevesi, iklim değişikliğinin güvenlik üzerindeki etkilerini 7 dayanıklılık temeli üzerinden değerlendirir: sivil ulaşım, iletişim, enerji, gıda/su, kitle kayıpları, kontrolsüz nüfus hareketleri ve sivil yönetim sürekliliği.</p>
-              <p>⚠️ Bu endeks, aynı hidrolojik verileri kullanarak NATO'nun güvenlik perspektifinden bir kırılganlık değerlendirmesi sunar.</p>
+              <p>🛡️ NATO 7BLR: Sivil yönetim sürekliliği, enerji arzı, kontrolsüz nüfus hareketleri, gıda/su kaynakları, kitle kayıp yönetimi, sivil iletişim ve sivil ulaşım dayanıklılığı.</p>
+              <p>⚡ BlackStart konsepti: Elektrik şebekesinin tamamen çökmesi durumunda dışarıdan enerji kaynağı olmadan sistemi yeniden başlatma kapasitesi.</p>
+              <p>🎯 Kinetic tetikleyici: Çoklu kriz sütunlarının eşzamanlı aktivasyonunda doğrusal olmayan (non-linear) risk artışı modeli.</p>
             </section>
           </TabsContent>
         </Tabs>

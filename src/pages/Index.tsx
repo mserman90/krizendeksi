@@ -12,9 +12,12 @@ import HydroCrisisBreakdown from "@/components/HydroCrisisBreakdown";
 import BasinInfo from "@/components/BasinInfo";
 import BasinMap from "@/components/BasinMap";
 import HydroPanel from "@/components/HydroPanel";
+import CrisisAlertBanner from "@/components/CrisisAlertBanner";
+import CrisisAlertHistory from "@/components/CrisisAlertHistory";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
-import { Activity, Droplets, CloudRain, Newspaper, Map, Database, Zap } from "lucide-react";
+import { useCrisisAlerts } from "@/hooks/useCrisisAlerts";
+import { Activity, Droplets, CloudRain, Newspaper, Map, Database, Zap, Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const Index = () => {

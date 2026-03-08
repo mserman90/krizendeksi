@@ -1,13 +1,9 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { generateWeeklyTimeSeries, generateMockNews, getCrisisLevel, computeHydroCrisisIndex } from "@/lib/mockData";
-import type { NewsItem, HydroCrisisScores } from "@/lib/mockData";
-import { fetchRssNews } from "@/lib/api/rssApi";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getCrisisLevel, computeHydroCrisisIndex } from "@/lib/mockData";
+import type { HydroCrisisScores } from "@/lib/mockData";
 import CrisisGauge from "@/components/CrisisGauge";
-import ReservoirChart from "@/components/ReservoirChart";
-import RainfallChart from "@/components/RainfallChart";
-import NewsPanel from "@/components/NewsPanel";
-import ScoreBreakdown from "@/components/ScoreBreakdown";
 import HydroCrisisBreakdown from "@/components/HydroCrisisBreakdown";
 import MethodologyDialog from "@/components/MethodologyDialog";
 import BasinInfo from "@/components/BasinInfo";
@@ -18,22 +14,19 @@ import CrisisAlertHistory from "@/components/CrisisAlertHistory";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
 import { useCrisisAlerts } from "@/hooks/useCrisisAlerts";
-import { Activity, Droplets, CloudRain, Newspaper, Map, Database, Zap, Bell } from "lucide-react";
+import { BASINS, type BasinConfig } from "@/lib/basinConfig";
+import { Activity, Droplets, CloudRain, Map, Database, Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-const Index = () => {
-  const timeSeries = useMemo(() => generateWeeklyTimeSeries(12), []);
-  const mockNews = useMemo(() => generateMockNews(), []);
-  const latest = timeSeries[timeSeries.length - 1];
+const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
   const hydro = useHydroData();
-  const { alerts, loading: alertsLoading } = useCrisisAlerts();
+  const [alertThreshold, setAlertThreshold] = useState(60);
 
-  // Auto-fetch hydro data on mount
   useEffect(() => {
-    hydro.fetch(14);
-  }, []);
+    hydro.reset();
+    hydro.fetch(14, basin.id);
+  }, [basin.id]);
 
-  // Compute hydro-based crisis scores when data is available
   const hydroCrisis: HydroCrisisScores | null = useMemo(() => {
     if (!hydro.data?.summary) return null;
     const s = hydro.data.summary;
@@ -50,39 +43,158 @@ const Index = () => {
     });
   }, [hydro.data]);
 
-  // Use hydro crisis index if available, otherwise fall back to mock
-  const crisisValue = hydroCrisis?.weeklyIndex ?? latest.scores.weeklyIndex;
-  const { label } = getCrisisLevel(crisisValue);
+  const crisisValue = hydroCrisis?.weeklyIndex ?? 50;
   const isHydroLive = hydroCrisis !== null;
-  const [alertThreshold, setAlertThreshold] = useState(60);
 
-  const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
-  const [newsLoading, setNewsLoading] = useState(false);
-  const [newsError, setNewsError] = useState<string | null>(null);
-  const [newsFilter, setNewsFilter] = useState(true);
+  return (
+    <div className="space-y-6">
+      <CrisisAlertBanner crisisIndex={crisisValue} threshold={alertThreshold} />
 
-  const handleFetchNews = useCallback(async (filter: boolean) => {
-    setNewsLoading(true);
-    setNewsError(null);
-    try {
-      const res = await fetchRssNews(filter);
-      if (res.success && res.items) {
-        setLiveNews(res.items);
-        if (res.errors?.length) {
-          setNewsError(`Bazı kaynaklar yüklenemedi: ${res.errors.join(", ")}`);
-        }
-      } else {
-        setNewsError(res.error || "Haberler alınamadı");
-      }
-    } catch (e) {
-      setNewsError("Bağlantı hatası");
-    } finally {
-      setNewsLoading(false);
-    }
-  }, []);
+      {/* Row 1: Crisis Gauge + Score Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Activity className="h-4 w-4" /> Kriz Endeksi
+              {isHydroLive && <Badge variant="secondary" className="text-[10px]">Canlı</Badge>}
+              {hydro.loading && <span className="text-[10px] text-muted-foreground animate-pulse">Yükleniyor...</span>}
+              <MethodologyDialog />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-center">
+              <CrisisGauge value={crisisValue} />
+            </div>
+            <div className="space-y-1.5 pt-2 border-t border-border/50">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-muted-foreground">Uyarı Eşiği</span>
+                <span className="text-xs font-mono font-semibold">{alertThreshold}</span>
+              </div>
+              <input
+                type="range"
+                min={20}
+                max={90}
+                step={5}
+                value={alertThreshold}
+                onChange={(e) => setAlertThreshold(Number(e.target.value))}
+                className="w-full h-1.5 accent-primary cursor-pointer"
+              />
+              <div className="flex justify-between text-[9px] text-muted-foreground">
+                <span>20</span>
+                <span>90</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-  const newsItems = liveNews ?? mockNews;
-  const isLive = liveNews !== null;
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Droplets className="h-4 w-4" /> Toplam Yağış
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isHydroLive ? (
+              <>
+                <p className="text-3xl font-bold font-mono">{hydro.data!.summary.totalPrecipMm}</p>
+                <p className="text-xs text-muted-foreground">mm (havza toplam)</p>
+                <p className="text-xs mt-2">
+                  Skor: <span className="font-mono font-semibold">{Math.round(hydroCrisis!.precipScore)}</span>/100
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Veri bekleniyor...</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <CloudRain className="h-4 w-4" /> Ort. Nehir Debisi
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isHydroLive ? (
+              <>
+                <p className="text-3xl font-bold font-mono">{hydro.data!.summary.avgDischargeM3s}</p>
+                <p className="text-xs text-muted-foreground">m³/s (havza ortalaması)</p>
+                <p className="text-xs mt-2">
+                  Skor: <span className="font-mono font-semibold">{Math.round(hydroCrisis!.dischargeScore)}</span>/100
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Veri bekleniyor...</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Row 2: Basin Map */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Map className="h-4 w-4" /> {basin.name} Haritası
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <BasinMap basin={basin} />
+        </CardContent>
+      </Card>
+
+      {/* Row 3: Hydro Data Panel */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Database className="h-4 w-4" /> Hidrolojik Veriler
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <HydroPanel
+            data={hydro.data}
+            loading={hydro.loading}
+            error={hydro.error}
+            warnings={hydro.warnings}
+            onFetch={(days) => hydro.fetch(days, basin.id)}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Row 4: Score Breakdown + Basin Info */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              Skor Detayları
+              {isHydroLive && <Badge variant="secondary" className="text-[10px]">Hidrolojik</Badge>}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {hydroCrisis ? (
+              <HydroCrisisBreakdown scores={hydroCrisis} />
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">Veri yükleniyor...</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Havza Bilgileri</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BasinInfo basin={basin} />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+const Index = () => {
+  const [activeBasin, setActiveBasin] = useState(BASINS[0].id);
+  const { alerts, loading: alertsLoading } = useCrisisAlerts();
+  const currentBasin = BASINS.find((b) => b.id === activeBasin) ?? BASINS[0];
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,18 +203,10 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <Activity className="h-6 w-6 text-primary" />
             <div>
-              <h1 className="text-lg font-bold tracking-tight">Fırat-Dicle Haftalık OSINT İzleme Paneli</h1>
+              <h1 className="text-lg font-bold tracking-tight">Sınıraşan Su Havzaları OSINT İzleme Paneli</h1>
               <p className="text-xs text-muted-foreground">
-                {hydro.data?.summary
-                  ? `${hydro.data.summary.periodStart} — ${hydro.data.summary.periodEnd}`
-                  : `${latest.metrics.weekStart} — ${latest.metrics.weekEnd}`}
-                {" · Durum: "}{label}
+                Türkiye'nin sınıraşan su havzalarının gerçek zamanlı hidrolojik izleme sistemi
               </p>
-              {isHydroLive && (
-                <Badge variant="outline" className="text-[10px] mt-1 border-green-500 text-green-600">
-                  <Zap className="h-3 w-3 mr-1" /> Canlı Hidrolojik Veri
-                </Badge>
-              )}
             </div>
           </div>
           <ThemeToggle />
@@ -110,173 +214,27 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Alert Banner */}
-        <CrisisAlertBanner crisisIndex={crisisValue} threshold={alertThreshold} />
+        <Tabs value={activeBasin} onValueChange={setActiveBasin} className="w-full">
+          <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
+            {BASINS.map((basin) => (
+              <TabsTrigger
+                key={basin.id}
+                value={basin.id}
+                className="text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex-1 min-w-[120px]"
+              >
+                {basin.shortName}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        {/* Row 1: Crisis Gauge + Score Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Activity className="h-4 w-4" /> Kriz Endeksi
-                {isHydroLive && <Badge variant="secondary" className="text-[10px]">Canlı</Badge>}
-                {hydro.loading && <span className="text-[10px] text-muted-foreground animate-pulse">Yükleniyor...</span>}
-                <MethodologyDialog />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-center">
-                <CrisisGauge value={crisisValue} />
-              </div>
-              <div className="space-y-1.5 pt-2 border-t border-border/50">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-muted-foreground">Uyarı Eşiği</span>
-                  <span className="text-xs font-mono font-semibold">{alertThreshold}</span>
-                </div>
-                <input
-                  type="range"
-                  min={20}
-                  max={90}
-                  step={5}
-                  value={alertThreshold}
-                  onChange={(e) => setAlertThreshold(Number(e.target.value))}
-                  className="w-full h-1.5 accent-primary cursor-pointer"
-                />
-                <div className="flex justify-between text-[9px] text-muted-foreground">
-                  <span>20</span>
-                  <span>90</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {BASINS.map((basin) => (
+            <TabsContent key={basin.id} value={basin.id} className="mt-4">
+              <BasinDashboard basin={basin} />
+            </TabsContent>
+          ))}
+        </Tabs>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Droplets className="h-4 w-4" /> {isHydroLive ? "Toplam Yağış" : "Rezervuar Alanı"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isHydroLive ? (
-                <>
-                  <p className="text-3xl font-bold font-mono">{hydro.data!.summary.totalPrecipMm}</p>
-                  <p className="text-xs text-muted-foreground">mm (havza toplam, {hydro.data!.summary.periodStart} – {hydro.data!.summary.periodEnd})</p>
-                  <p className="text-xs mt-2">
-                    Skor: <span className="font-mono font-semibold">{Math.round(hydroCrisis!.precipScore)}</span>/100
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-3xl font-bold font-mono">{latest.metrics.reservoirAreaKm2}</p>
-                  <p className="text-xs text-muted-foreground">km² (Atatürk Barajı)</p>
-                  <p className="text-xs mt-2">
-                    Skor: <span className="font-mono font-semibold">{Math.round(latest.scores.areaScore)}</span>/100
-                  </p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <CloudRain className="h-4 w-4" /> {isHydroLive ? "Ort. Nehir Debisi" : "Haftalık Yağış"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isHydroLive ? (
-                <>
-                  <p className="text-3xl font-bold font-mono">{hydro.data!.summary.avgDischargeM3s}</p>
-                  <p className="text-xs text-muted-foreground">m³/s (havza ortalaması)</p>
-                  <p className="text-xs mt-2">
-                    Skor: <span className="font-mono font-semibold">{Math.round(hydroCrisis!.dischargeScore)}</span>/100
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-3xl font-bold font-mono">{latest.metrics.basinRainMm}</p>
-                  <p className="text-xs text-muted-foreground">mm (havza ortalaması)</p>
-                  <p className="text-xs mt-2">
-                    Skor: <span className="font-mono font-semibold">{Math.round(latest.scores.rainScore)}</span>/100
-                  </p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Row 2: Reservoir Area Chart */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Rezervuar Su Alanı (Son 12 Hafta)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ReservoirChart data={timeSeries} />
-          </CardContent>
-        </Card>
-
-        {/* Row 3: Rainfall + News */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Haftalık Yağış (mm)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RainfallChart data={timeSeries} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Newspaper className="h-4 w-4" /> İlgili Haberler ({newsItems.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <NewsPanel
-                items={newsItems}
-                isLive={isLive}
-                isLoading={newsLoading}
-                onRefresh={handleFetchNews}
-                error={newsError}
-                filterEnabled={newsFilter}
-                onFilterChange={setNewsFilter}
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Row 4: Basin Map */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Map className="h-4 w-4" /> Fırat-Dicle Havzası Haritası
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BasinMap />
-          </CardContent>
-        </Card>
-
-        {/* Row 5: Hydro Data Panel (Real API Data) */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Database className="h-4 w-4" /> Hidrolojik Veriler (Open-Meteo · NASA POWER · GloFAS)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <HydroPanel
-              data={hydro.data}
-              loading={hydro.loading}
-              error={hydro.error}
-              warnings={hydro.warnings}
-              onFetch={hydro.fetch}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Row 6: Alert History */}
+        {/* Alert History (shared across basins) */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -290,34 +248,6 @@ const Index = () => {
             <CrisisAlertHistory alerts={alerts} loading={alertsLoading} />
           </CardContent>
         </Card>
-
-        {/* Row 7: Score Breakdown + Basin Info */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                Skor Detayları
-                {isHydroLive && <Badge variant="secondary" className="text-[10px]">Hidrolojik</Badge>}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {hydroCrisis ? (
-                <HydroCrisisBreakdown scores={hydroCrisis} />
-              ) : (
-                <ScoreBreakdown scores={latest.scores} />
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Havza Bilgileri</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <BasinInfo />
-            </CardContent>
-          </Card>
-        </div>
       </main>
     </div>
   );

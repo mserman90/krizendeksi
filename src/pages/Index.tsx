@@ -25,11 +25,43 @@ import { toast } from "sonner";
 const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
   const hydro = useHydroData();
   const [alertThreshold, setAlertThreshold] = useState(60);
+  const [saving, setSaving] = useState(false);
+  const [trendKey, setTrendKey] = useState(0);
 
   useEffect(() => {
     hydro.reset();
     hydro.fetch(14, basin.id);
   }, [basin.id]);
+
+  const handleSave = useCallback(async () => {
+    if (!hydro.data?.summary || !hydroCrisis) return;
+    setSaving(true);
+    try {
+      await saveHydroSnapshot({
+        basinId: basin.id,
+        crisisIndex: Math.round(hydroCrisis.weeklyIndex * 10) / 10,
+        summary: {
+          totalPrecipMm: hydro.data.summary.totalPrecipMm,
+          avgDischargeM3s: hydro.data.summary.avgDischargeM3s,
+          avgSoilMoisture: hydro.data.summary.avgSoilMoisture,
+          totalEvapMm: hydro.data.summary.totalEvapMm,
+          totalSnowfallMm: hydro.data.summary.totalSnowfallMm,
+          avgHumidity: hydro.data.summary.avgHumidity,
+          avgWindSpeed: hydro.data.summary.avgWindSpeed,
+          avgSolarRadiation: hydro.data.summary.avgSolarRadiation,
+          dischargeAnomalyRatio: hydro.data.summary.dischargeAnomalyRatio,
+        },
+        periodStart: hydro.data.summary.periodStart,
+        periodEnd: hydro.data.summary.periodEnd,
+      });
+      toast.success("Veriler kaydedildi");
+      setTrendKey((k) => k + 1);
+    } catch (e: any) {
+      toast.error("Kaydetme hatası: " + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }, [hydro.data, hydroCrisis, basin.id]);
 
   const hydroCrisis: HydroCrisisScores | null = useMemo(() => {
     if (!hydro.data?.summary) return null;

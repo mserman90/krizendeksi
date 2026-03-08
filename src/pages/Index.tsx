@@ -33,6 +33,22 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
     hydro.fetch(14, basin.id);
   }, [basin.id]);
 
+  const hydroCrisis: HydroCrisisScores | null = useMemo(() => {
+    if (!hydro.data?.summary) return null;
+    const s = hydro.data.summary;
+    return computeHydroCrisisIndex({
+      totalPrecipMm: s.totalPrecipMm,
+      avgDischargeM3s: s.avgDischargeM3s,
+      avgSoilMoisture: s.avgSoilMoisture,
+      totalEvapMm: s.totalEvapMm,
+      totalSnowfallMm: s.totalSnowfallMm,
+      avgHumidity: s.avgHumidity,
+      avgWindSpeed: s.avgWindSpeed,
+      avgSolarRadiation: s.avgSolarRadiation,
+      dischargeAnomalyRatio: s.dischargeAnomalyRatio,
+    });
+  }, [hydro.data]);
+
   const handleSave = useCallback(async () => {
     if (!hydro.data?.summary || !hydroCrisis) return;
     setSaving(true);
@@ -62,23 +78,6 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       setSaving(false);
     }
   }, [hydro.data, hydroCrisis, basin.id]);
-
-  const hydroCrisis: HydroCrisisScores | null = useMemo(() => {
-    if (!hydro.data?.summary) return null;
-    const s = hydro.data.summary;
-    return computeHydroCrisisIndex({
-      totalPrecipMm: s.totalPrecipMm,
-      avgDischargeM3s: s.avgDischargeM3s,
-      avgSoilMoisture: s.avgSoilMoisture,
-      totalEvapMm: s.totalEvapMm,
-      totalSnowfallMm: s.totalSnowfallMm,
-      avgHumidity: s.avgHumidity,
-      avgWindSpeed: s.avgWindSpeed,
-      avgSolarRadiation: s.avgSolarRadiation,
-      dischargeAnomalyRatio: s.dischargeAnomalyRatio,
-    });
-  }, [hydro.data]);
-
   const crisisValue = hydroCrisis?.weeklyIndex ?? 50;
   const isHydroLive = hydroCrisis !== null;
 

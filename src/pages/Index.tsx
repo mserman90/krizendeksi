@@ -172,22 +172,22 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       </div>
 
       {/* Row 2: Basin Map */}
-      <Card>
+      <Card className="dashboard-card overflow-hidden">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Map className="h-4 w-4" /> {basin.name} Haritası
+          <CardTitle className="section-title flex items-center gap-2">
+            <Map className="h-4 w-4 text-primary" /> {basin.name} Haritası
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 pb-4 px-4">
           <BasinMap basin={basin} />
         </CardContent>
       </Card>
 
       {/* Row 3: Hydro Data Panel */}
-      <Card>
+      <Card className="dashboard-card">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Database className="h-4 w-4" /> Hidrolojik Veriler
+          <CardTitle className="section-title flex items-center gap-2">
+            <Database className="h-4 w-4 text-primary" /> Hidrolojik Veriler
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -202,15 +202,14 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       </Card>
 
       {/* Row 4: Save & Weekly Trend */}
-      <Card>
+      <Card className="dashboard-card">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" /> Haftalık Trend Karşılaştırması
+          <CardTitle className="section-title flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" /> Haftalık Trend
             <div className="ml-auto">
               <Button
                 size="sm"
-                variant="outline"
-                className="text-xs gap-1.5"
+                className="text-xs gap-1.5 font-semibold"
                 onClick={handleSave}
                 disabled={saving || !isHydroLive}
               >
@@ -227,32 +226,31 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
 
       {/* Row 5: Score Breakdown + Basin Info */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
+        <Card className="dashboard-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
+            <CardTitle className="section-title flex items-center gap-2">
               Skor Detayları
-              {isHydroLive && <Badge variant="secondary" className="text-[10px]">Hidrolojik</Badge>}
+              {isHydroLive && <Badge variant="secondary" className="text-[10px] font-medium">● Hidrolojik</Badge>}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {hydroCrisis ? (
               <HydroCrisisBreakdown scores={hydroCrisis} />
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">Veri yükleniyor...</p>
+              <p className="text-sm text-muted-foreground text-center py-4 animate-pulse">Veri yükleniyor...</p>
             )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dashboard-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Havza Bilgileri</CardTitle>
+            <CardTitle className="section-title">Havza Bilgileri</CardTitle>
           </CardHeader>
           <CardContent>
             <BasinInfo basin={basin} />
           </CardContent>
         </Card>
       </div>
-    </div>
   );
 };
 

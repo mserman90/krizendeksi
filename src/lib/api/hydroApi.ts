@@ -42,14 +42,15 @@ export interface HydroData {
 
 export interface HydroResponse {
   success: boolean;
+  basinId?: string;
   data?: HydroData;
   errors?: string[];
   error?: string;
 }
 
-export async function fetchHydroData(pastDays = 14): Promise<HydroResponse> {
+export async function fetchHydroData(pastDays = 14, basinId = "firat-dicle"): Promise<HydroResponse> {
   const { data, error } = await supabase.functions.invoke("fetch-hydro-data", {
-    body: { pastDays },
+    body: { pastDays, basinId },
   });
 
   if (error) {

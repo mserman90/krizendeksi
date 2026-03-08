@@ -5,14 +5,43 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const BASIN_POINTS = {
-  basinCenter: { lat: 37.8, lon: 39.5 },
+// Basin definitions (server-side mirror of client basinConfig)
+const BASIN_CONFIGS: Record<string, { center: { lat: number; lon: number }; floodPoints: { lat: number; lon: number; name: string }[] }> = {
+  "firat-dicle": {
+    center: { lat: 37.8, lon: 39.5 },
+    floodPoints: [
+      { lat: 37.47, lon: 38.33, name: "Atatürk" },
+      { lat: 36.85, lon: 40.42, name: "Dicle-Hasankeyf" },
+    ],
+  },
+  "meric-ergene": {
+    center: { lat: 41.7, lon: 26.3 },
+    floodPoints: [
+      { lat: 41.67, lon: 26.56, name: "Edirne" },
+      { lat: 41.40, lon: 26.72, name: "Meriç-İpsala" },
+    ],
+  },
+  "coruh": {
+    center: { lat: 40.9, lon: 41.2 },
+    floodPoints: [
+      { lat: 41.18, lon: 41.82, name: "Çoruh-Batum" },
+      { lat: 40.85, lon: 41.50, name: "Artvin" },
+    ],
+  },
+  "aras": {
+    center: { lat: 40.0, lon: 43.5 },
+    floodPoints: [
+      { lat: 39.92, lon: 44.58, name: "Aras-Iğdır" },
+      { lat: 40.17, lon: 43.67, name: "Aras-Kars" },
+    ],
+  },
+  "kura": {
+    center: { lat: 41.2, lon: 43.0 },
+    floodPoints: [
+      { lat: 41.23, lon: 43.60, name: "Kura-Ardahan" },
+    ],
+  },
 };
-
-const FLOOD_POINTS = [
-  { lat: 37.47, lon: 38.33, name: "Atatürk" },
-  { lat: 36.85, lon: 40.42, name: "Dicle-Hasankeyf" },
-];
 
 function formatDate(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -63,11 +92,14 @@ Deno.serve(async (req) => {
 
   try {
     let pastDays = 14;
+    let basinId = "firat-dicle";
     try {
       const body = await req.json();
       if (body?.pastDays) pastDays = Math.min(Math.max(body.pastDays, 7), 90);
+      if (body?.basinId && BASIN_CONFIGS[body.basinId]) basinId = body.basinId;
     } catch { /* no body */ }
 
+    const basin = BASIN_CONFIGS[basinId];
     const errors: string[] = [];
     const sourcesUsed: string[] = [];
     const now = new Date();
@@ -75,12 +107,12 @@ Deno.serve(async (req) => {
     startDate.setDate(startDate.getDate() - pastDays);
 
     const [meteoResult, floodResults, nasaResult] = await Promise.all([
-      fetchOpenMeteoForecast(BASIN_POINTS.basinCenter.lat, BASIN_POINTS.basinCenter.lon, pastDays),
-      Promise.all(FLOOD_POINTS.map(async (p) => {
+      fetchOpenMeteoForecast(basin.center.lat, basin.center.lon, pastDays),
+      Promise.all(basin.floodPoints.map(async (p) => {
         const result = await fetchOpenMeteoFlood(p.lat, p.lon, pastDays);
         return { ...result, name: p.name };
       })),
-      fetchNasaPower(BASIN_POINTS.basinCenter.lat, BASIN_POINTS.basinCenter.lon, formatDate(startDate), formatDate(now)),
+      fetchNasaPower(basin.center.lat, basin.center.lon, formatDate(startDate), formatDate(now)),
     ]);
 
     const precipitation: { date: string; mm: number; source: string }[] = [];
@@ -93,40 +125,23 @@ Deno.serve(async (req) => {
     const windSpeed: { date: string; kmh: number }[] = [];
     const solarRadiation: { date: string; kwh: number; source: string }[] = [];
 
-    // Open-Meteo data
     if (meteoResult.forecast) {
       sourcesUsed.push("Open-Meteo Forecast");
       const d = meteoResult.forecast.daily;
       for (let i = 0; i < d.time.length; i++) {
         precipitation.push({ date: d.time[i], mm: d.precipitation_sum[i] ?? 0, source: "open-meteo" });
-        if (d.et0_fao_evapotranspiration?.[i] != null) {
-          evapotranspiration.push({ date: d.time[i], mm: d.et0_fao_evapotranspiration[i], source: "open-meteo" });
-        }
-        if (d.temperature_2m_mean?.[i] != null) {
-          temperature.push({ date: d.time[i], celsius: d.temperature_2m_mean[i] });
-        }
-        if (d.soil_moisture_0_to_7cm_mean?.[i] != null) {
-          soilMoisture.push({ date: d.time[i], value: d.soil_moisture_0_to_7cm_mean[i] });
-        }
-        if (d.snowfall_sum?.[i] != null) {
-          snowfall.push({ date: d.time[i], mm: d.snowfall_sum[i] });
-        }
-        if (d.relative_humidity_2m_mean?.[i] != null) {
-          humidity.push({ date: d.time[i], percent: d.relative_humidity_2m_mean[i] });
-        }
-        if (d.wind_speed_10m_max?.[i] != null) {
-          windSpeed.push({ date: d.time[i], kmh: d.wind_speed_10m_max[i] });
-        }
+        if (d.et0_fao_evapotranspiration?.[i] != null) evapotranspiration.push({ date: d.time[i], mm: d.et0_fao_evapotranspiration[i], source: "open-meteo" });
+        if (d.temperature_2m_mean?.[i] != null) temperature.push({ date: d.time[i], celsius: d.temperature_2m_mean[i] });
+        if (d.soil_moisture_0_to_7cm_mean?.[i] != null) soilMoisture.push({ date: d.time[i], value: d.soil_moisture_0_to_7cm_mean[i] });
+        if (d.snowfall_sum?.[i] != null) snowfall.push({ date: d.time[i], mm: d.snowfall_sum[i] });
+        if (d.relative_humidity_2m_mean?.[i] != null) humidity.push({ date: d.time[i], percent: d.relative_humidity_2m_mean[i] });
+        if (d.wind_speed_10m_max?.[i] != null) windSpeed.push({ date: d.time[i], kmh: d.wind_speed_10m_max[i] });
       }
-    } else if (meteoResult.error) {
-      errors.push(meteoResult.error);
-    }
+    } else if (meteoResult.error) errors.push(meteoResult.error);
 
-    // NASA POWER data
     if (nasaResult.data?.properties?.parameter) {
       sourcesUsed.push("NASA POWER");
       const params = nasaResult.data.properties.parameter;
-
       if (precipitation.length === 0 && params.PRECTOTCORR) {
         for (const [dateStr, val] of Object.entries(params.PRECTOTCORR)) {
           if (val >= 0) {
@@ -135,7 +150,6 @@ Deno.serve(async (req) => {
           }
         }
       }
-
       if (params.EVPTRNS) {
         for (const [dateStr, val] of Object.entries(params.EVPTRNS)) {
           if (val >= 0) {
@@ -144,7 +158,6 @@ Deno.serve(async (req) => {
           }
         }
       }
-
       if (params.ALLSKY_SFC_SW_DWN) {
         for (const [dateStr, val] of Object.entries(params.ALLSKY_SFC_SW_DWN)) {
           if (val >= 0) {
@@ -153,31 +166,20 @@ Deno.serve(async (req) => {
           }
         }
       }
-    } else if (nasaResult.error) {
-      errors.push(nasaResult.error);
-    }
+    } else if (nasaResult.error) errors.push(nasaResult.error);
 
-    // Flood/discharge data
     for (const fr of floodResults) {
       if (fr.flood) {
         sourcesUsed.push(`Open-Meteo Flood (${fr.name})`);
         const d = fr.flood.daily;
         for (let i = 0; i < d.time.length; i++) {
           if (d.river_discharge?.[i] != null) {
-            riverDischarge.push({
-              date: d.time[i],
-              m3s: d.river_discharge[i],
-              location: fr.name,
-              median: d.river_discharge_median?.[i],
-            });
+            riverDischarge.push({ date: d.time[i], m3s: d.river_discharge[i], location: fr.name, median: d.river_discharge_median?.[i] });
           }
         }
-      } else if (fr.error) {
-        errors.push(fr.error);
-      }
+      } else if (fr.error) errors.push(fr.error);
     }
 
-    // Compute summary
     const totalPrecipMm = precipitation.reduce((s, p) => s + p.mm, 0);
     const avgSoilMoisture = soilMoisture.length > 0 ? soilMoisture.reduce((s, v) => s + v.value, 0) / soilMoisture.length : 0;
     const totalSnowfallMm = snowfall.reduce((s, v) => s + v.mm, 0);
@@ -187,8 +189,6 @@ Deno.serve(async (req) => {
     const avgHumidity = humidity.length > 0 ? humidity.reduce((s, v) => s + v.percent, 0) / humidity.length : 0;
     const avgWindSpeed = windSpeed.length > 0 ? windSpeed.reduce((s, v) => s + v.kmh, 0) / windSpeed.length : 0;
     const avgSolarRadiation = solarRadiation.length > 0 ? solarRadiation.reduce((s, v) => s + v.kwh, 0) / solarRadiation.length : 0;
-
-    // Discharge anomaly: avg(actual/median) ratio
     const dischargeWithMedian = riverDischarge.filter(d => d.median && d.median > 0);
     const dischargeAnomalyRatio = dischargeWithMedian.length > 0
       ? dischargeWithMedian.reduce((s, d) => s + d.m3s / d.median!, 0) / dischargeWithMedian.length
@@ -198,31 +198,16 @@ Deno.serve(async (req) => {
 
     const result = {
       success: true,
+      basinId,
       data: {
-        precipitation,
-        evapotranspiration,
-        soilMoisture,
-        snowfall,
-        riverDischarge,
-        temperature,
-        humidity,
-        windSpeed,
-        solarRadiation,
+        precipitation, evapotranspiration, soilMoisture, snowfall, riverDischarge, temperature, humidity, windSpeed, solarRadiation,
         summary: {
-          totalPrecipMm: r(totalPrecipMm),
-          avgSoilMoisture: Math.round(avgSoilMoisture * 1000) / 1000,
-          totalSnowfallMm: r(totalSnowfallMm),
-          avgDischargeM3s: r(avgDischargeM3s),
-          totalEvapMm: r(totalEvapMm),
-          avgTempC: r(avgTempC),
-          avgHumidity: r(avgHumidity),
-          avgWindSpeed: r(avgWindSpeed),
-          avgSolarRadiation: r(avgSolarRadiation),
-          dischargeAnomalyRatio: Math.round(dischargeAnomalyRatio * 100) / 100,
-          dataSourcesUsed: [...new Set(sourcesUsed)],
-          fetchedAt: new Date().toISOString(),
-          periodStart: formatDate(startDate),
-          periodEnd: formatDate(now),
+          totalPrecipMm: r(totalPrecipMm), avgSoilMoisture: Math.round(avgSoilMoisture * 1000) / 1000,
+          totalSnowfallMm: r(totalSnowfallMm), avgDischargeM3s: r(avgDischargeM3s), totalEvapMm: r(totalEvapMm),
+          avgTempC: r(avgTempC), avgHumidity: r(avgHumidity), avgWindSpeed: r(avgWindSpeed),
+          avgSolarRadiation: r(avgSolarRadiation), dischargeAnomalyRatio: Math.round(dischargeAnomalyRatio * 100) / 100,
+          dataSourcesUsed: [...new Set(sourcesUsed)], fetchedAt: new Date().toISOString(),
+          periodStart: formatDate(startDate), periodEnd: formatDate(now),
         },
       },
       errors: errors.length > 0 ? errors : undefined,

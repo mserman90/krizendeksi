@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateWeeklyTimeSeries, generateMockNews, getCrisisLevel } from "@/lib/mockData";
+import type { NewsItem } from "@/lib/mockData";
+import { fetchRssNews } from "@/lib/api/rssApi";
 import CrisisGauge from "@/components/CrisisGauge";
 import ReservoirChart from "@/components/ReservoirChart";
 import RainfallChart from "@/components/RainfallChart";
@@ -11,13 +13,39 @@ import { Activity, Droplets, CloudRain, Newspaper } from "lucide-react";
 
 const Index = () => {
   const timeSeries = useMemo(() => generateWeeklyTimeSeries(12), []);
-  const news = useMemo(() => generateMockNews(), []);
+  const mockNews = useMemo(() => generateMockNews(), []);
   const latest = timeSeries[timeSeries.length - 1];
   const { label } = getCrisisLevel(latest.scores.weeklyIndex);
 
+  const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [newsError, setNewsError] = useState<string | null>(null);
+
+  const handleFetchNews = useCallback(async () => {
+    setNewsLoading(true);
+    setNewsError(null);
+    try {
+      const res = await fetchRssNews();
+      if (res.success && res.items) {
+        setLiveNews(res.items);
+        if (res.errors?.length) {
+          setNewsError(`Bazı kaynaklar yüklenemedi: ${res.errors.join(", ")}`);
+        }
+      } else {
+        setNewsError(res.error || "Haberler alınamadı");
+      }
+    } catch (e) {
+      setNewsError("Bağlantı hatası");
+    } finally {
+      setNewsLoading(false);
+    }
+  }, []);
+
+  const newsItems = liveNews ?? mockNews;
+  const isLive = liveNews !== null;
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center gap-3">
           <Activity className="h-6 w-6 text-primary" />
@@ -33,7 +61,7 @@ const Index = () => {
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Row 1: Crisis Gauge + Score Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="md:row-span-1">
+          <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Activity className="h-4 w-4" /> Kriz Endeksi
@@ -99,11 +127,17 @@ const Index = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Newspaper className="h-4 w-4" /> İlgili Haberler ({news.length})
+                <Newspaper className="h-4 w-4" /> İlgili Haberler ({newsItems.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <NewsPanel items={news} />
+              <NewsPanel
+                items={newsItems}
+                isLive={isLive}
+                isLoading={newsLoading}
+                onRefresh={handleFetchNews}
+                error={newsError}
+              />
             </CardContent>
           </Card>
         </div>

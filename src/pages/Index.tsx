@@ -10,8 +10,10 @@ import NewsPanel from "@/components/NewsPanel";
 import ScoreBreakdown from "@/components/ScoreBreakdown";
 import BasinInfo from "@/components/BasinInfo";
 import BasinMap from "@/components/BasinMap";
+import HydroPanel from "@/components/HydroPanel";
 import ThemeToggle from "@/components/ThemeToggle";
-import { Activity, Droplets, CloudRain, Newspaper, Map } from "lucide-react";
+import { useHydroData } from "@/hooks/useHydroData";
+import { Activity, Droplets, CloudRain, Newspaper, Map, Database } from "lucide-react";
 
 const Index = () => {
   const timeSeries = useMemo(() => generateWeeklyTimeSeries(12), []);

@@ -35,10 +35,10 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
     hydro.fetch(14, basin.id);
   }, [basin.id]);
 
-  const hydroCrisis: HydroCrisisScores | null = useMemo(() => {
+  const hydroInput = useMemo(() => {
     if (!hydro.data?.summary) return null;
     const s = hydro.data.summary;
-    return computeHydroCrisisIndex({
+    return {
       totalPrecipMm: s.totalPrecipMm,
       avgDischargeM3s: s.avgDischargeM3s,
       avgSoilMoisture: s.avgSoilMoisture,
@@ -48,8 +48,18 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       avgWindSpeed: s.avgWindSpeed,
       avgSolarRadiation: s.avgSolarRadiation,
       dischargeAnomalyRatio: s.dischargeAnomalyRatio,
-    });
+    };
   }, [hydro.data]);
+
+  const hydroCrisis: HydroCrisisScores | null = useMemo(() => {
+    if (!hydroInput) return null;
+    return computeHydroCrisisIndex(hydroInput);
+  }, [hydroInput]);
+
+  const natoCrisis: NatoCrisisScores | null = useMemo(() => {
+    if (!hydroInput) return null;
+    return computeNatoCrisisIndex(hydroInput);
+  }, [hydroInput]);
 
   const handleSave = useCallback(async () => {
     if (!hydro.data?.summary || !hydroCrisis) return;
@@ -80,7 +90,9 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       setSaving(false);
     }
   }, [hydro.data, hydroCrisis, basin.id]);
-  const crisisValue = hydroCrisis?.weeklyIndex ?? 50;
+
+  const activeCrisis = method === "nato" ? natoCrisis : hydroCrisis;
+  const crisisValue = activeCrisis?.weeklyIndex ?? 50;
   const isHydroLive = hydroCrisis !== null;
 
   return (

@@ -251,6 +251,7 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
           </CardContent>
         </Card>
       </div>
+    </div>
   );
 };
 

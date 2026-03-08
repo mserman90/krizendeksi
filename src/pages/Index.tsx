@@ -20,12 +20,13 @@ const Index = () => {
   const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);
   const [newsError, setNewsError] = useState<string | null>(null);
+  const [newsFilter, setNewsFilter] = useState(true);
 
-  const handleFetchNews = useCallback(async () => {
+  const handleFetchNews = useCallback(async (filter: boolean) => {
     setNewsLoading(true);
     setNewsError(null);
     try {
-      const res = await fetchRssNews();
+      const res = await fetchRssNews(filter);
       if (res.success && res.items) {
         setLiveNews(res.items);
         if (res.errors?.length) {
@@ -137,6 +138,8 @@ const Index = () => {
                 isLoading={newsLoading}
                 onRefresh={handleFetchNews}
                 error={newsError}
+                filterEnabled={newsFilter}
+                onFilterChange={setNewsFilter}
               />
             </CardContent>
           </Card>

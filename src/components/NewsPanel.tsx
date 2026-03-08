@@ -1,18 +1,30 @@
 import type { NewsItem } from "@/lib/mockData";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Newspaper, RefreshCw, Wifi, WifiOff } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Newspaper, RefreshCw, Wifi, WifiOff, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface NewsPanelProps {
   items: NewsItem[];
   isLive?: boolean;
   isLoading?: boolean;
-  onRefresh?: () => void;
+  onRefresh?: (filter: boolean) => void;
   error?: string | null;
+  filterEnabled?: boolean;
+  onFilterChange?: (enabled: boolean) => void;
 }
 
-const NewsPanel = ({ items, isLive, isLoading, onRefresh, error }: NewsPanelProps) => {
+const NewsPanel = ({
+  items,
+  isLive,
+  isLoading,
+  onRefresh,
+  error,
+  filterEnabled = true,
+  onFilterChange,
+}: NewsPanelProps) => {
   return (
     <div className="space-y-2">
       {/* Status bar */}
@@ -31,7 +43,7 @@ const NewsPanel = ({ items, isLive, isLoading, onRefresh, error }: NewsPanelProp
           <Button
             variant="ghost"
             size="sm"
-            onClick={onRefresh}
+            onClick={() => onRefresh(filterEnabled)}
             disabled={isLoading}
             className="h-6 px-2 text-[10px]"
           >
@@ -41,15 +53,33 @@ const NewsPanel = ({ items, isLive, isLoading, onRefresh, error }: NewsPanelProp
         )}
       </div>
 
+      {/* Filter toggle */}
+      {onFilterChange && (
+        <div className="flex items-center gap-2 px-1">
+          <Filter className="h-3 w-3 text-muted-foreground" />
+          <Switch
+            id="news-filter"
+            checked={filterEnabled}
+            onCheckedChange={onFilterChange}
+            className="scale-75"
+          />
+          <Label htmlFor="news-filter" className="text-[10px] text-muted-foreground cursor-pointer">
+            {filterEnabled ? "Fırat-Dicle filtresi açık" : "Tüm haberler"}
+          </Label>
+        </div>
+      )}
+
       {error && (
         <p className="text-[10px] text-destructive bg-destructive/10 rounded px-2 py-1">{error}</p>
       )}
 
-      <ScrollArea className="h-[260px] pr-3">
+      <ScrollArea className="h-[240px] pr-3">
         <div className="space-y-3">
           {items.length === 0 && !isLoading && (
             <p className="text-sm text-muted-foreground text-center py-8">
-              Fırat-Dicle ile ilgili haber bulunamadı.
+              {filterEnabled
+                ? "Fırat-Dicle ile ilgili haber bulunamadı. Filtreyi kapatmayı deneyin."
+                : "Haber bulunamadı."}
             </p>
           )}
           {items.map((item, i) => (

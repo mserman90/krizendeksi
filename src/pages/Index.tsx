@@ -53,6 +53,7 @@ const Index = () => {
   const crisisValue = hydroCrisis?.weeklyIndex ?? latest.scores.weeklyIndex;
   const { label } = getCrisisLevel(crisisValue);
   const isHydroLive = hydroCrisis !== null;
+  const [alertThreshold, setAlertThreshold] = useState(60);
 
   const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);
@@ -109,7 +110,7 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Alert Banner */}
-        <CrisisAlertBanner crisisIndex={crisisValue} />
+        <CrisisAlertBanner crisisIndex={crisisValue} threshold={alertThreshold} />
 
         {/* Row 1: Crisis Gauge + Score Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

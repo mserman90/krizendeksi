@@ -1,26 +1,50 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { generateWeeklyTimeSeries, generateMockNews, getCrisisLevel } from "@/lib/mockData";
-import type { NewsItem } from "@/lib/mockData";
+import { generateWeeklyTimeSeries, generateMockNews, getCrisisLevel, computeHydroCrisisIndex } from "@/lib/mockData";
+import type { NewsItem, HydroCrisisScores } from "@/lib/mockData";
 import { fetchRssNews } from "@/lib/api/rssApi";
 import CrisisGauge from "@/components/CrisisGauge";
 import ReservoirChart from "@/components/ReservoirChart";
 import RainfallChart from "@/components/RainfallChart";
 import NewsPanel from "@/components/NewsPanel";
 import ScoreBreakdown from "@/components/ScoreBreakdown";
+import HydroCrisisBreakdown from "@/components/HydroCrisisBreakdown";
 import BasinInfo from "@/components/BasinInfo";
 import BasinMap from "@/components/BasinMap";
 import HydroPanel from "@/components/HydroPanel";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
-import { Activity, Droplets, CloudRain, Newspaper, Map, Database } from "lucide-react";
+import { Activity, Droplets, CloudRain, Newspaper, Map, Database, Zap } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const timeSeries = useMemo(() => generateWeeklyTimeSeries(12), []);
   const mockNews = useMemo(() => generateMockNews(), []);
   const latest = timeSeries[timeSeries.length - 1];
-  const { label } = getCrisisLevel(latest.scores.weeklyIndex);
   const hydro = useHydroData();
+
+  // Auto-fetch hydro data on mount
+  useEffect(() => {
+    hydro.fetch(14);
+  }, []);
+
+  // Compute hydro-based crisis scores when data is available
+  const hydroCrisis: HydroCrisisScores | null = useMemo(() => {
+    if (!hydro.data?.summary) return null;
+    const s = hydro.data.summary;
+    return computeHydroCrisisIndex({
+      totalPrecipMm: s.totalPrecipMm,
+      avgDischargeM3s: s.avgDischargeM3s,
+      avgSoilMoisture: s.avgSoilMoisture,
+      totalEvapMm: s.totalEvapMm,
+      totalSnowfallMm: s.totalSnowfallMm,
+    });
+  }, [hydro.data]);
+
+  // Use hydro crisis index if available, otherwise fall back to mock
+  const crisisValue = hydroCrisis?.weeklyIndex ?? latest.scores.weeklyIndex;
+  const { label } = getCrisisLevel(crisisValue);
+  const isHydroLive = hydroCrisis !== null;
 
   const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);
@@ -59,8 +83,16 @@ const Index = () => {
             <div>
               <h1 className="text-lg font-bold tracking-tight">Fırat-Dicle Haftalık OSINT İzleme Paneli</h1>
               <p className="text-xs text-muted-foreground">
-                {latest.metrics.weekStart} — {latest.metrics.weekEnd} · Durum: {label}
+                {hydro.data?.summary
+                  ? `${hydro.data.summary.periodStart} — ${hydro.data.summary.periodEnd}`
+                  : `${latest.metrics.weekStart} — ${latest.metrics.weekEnd}`}
+                {" · Durum: "}{label}
               </p>
+              {isHydroLive && (
+                <Badge variant="outline" className="text-[10px] mt-1 border-green-500 text-green-600">
+                  <Zap className="h-3 w-3 mr-1" /> Canlı Hidrolojik Veri
+                </Badge>
+              )}
             </div>
           </div>
           <ThemeToggle />
@@ -74,40 +106,66 @@ const Index = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Activity className="h-4 w-4" /> Kriz Endeksi
+                {isHydroLive && <Badge variant="secondary" className="text-[10px]">Canlı</Badge>}
+                {hydro.loading && <span className="text-[10px] text-muted-foreground animate-pulse">Yükleniyor...</span>}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex justify-center">
-              <CrisisGauge value={latest.scores.weeklyIndex} />
+              <CrisisGauge value={crisisValue} />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Droplets className="h-4 w-4" /> Rezervuar Alanı
+                <Droplets className="h-4 w-4" /> {isHydroLive ? "Toplam Yağış" : "Rezervuar Alanı"}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold font-mono">{latest.metrics.reservoirAreaKm2}</p>
-              <p className="text-xs text-muted-foreground">km² (Atatürk Barajı)</p>
-              <p className="text-xs mt-2">
-                Skor: <span className="font-mono font-semibold">{Math.round(latest.scores.areaScore)}</span>/100
-              </p>
+              {isHydroLive ? (
+                <>
+                  <p className="text-3xl font-bold font-mono">{hydro.data!.summary.totalPrecipMm}</p>
+                  <p className="text-xs text-muted-foreground">mm (havza toplam, {hydro.data!.summary.periodStart} – {hydro.data!.summary.periodEnd})</p>
+                  <p className="text-xs mt-2">
+                    Skor: <span className="font-mono font-semibold">{Math.round(hydroCrisis!.precipScore)}</span>/100
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold font-mono">{latest.metrics.reservoirAreaKm2}</p>
+                  <p className="text-xs text-muted-foreground">km² (Atatürk Barajı)</p>
+                  <p className="text-xs mt-2">
+                    Skor: <span className="font-mono font-semibold">{Math.round(latest.scores.areaScore)}</span>/100
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <CloudRain className="h-4 w-4" /> Haftalık Yağış
+                <CloudRain className="h-4 w-4" /> {isHydroLive ? "Ort. Nehir Debisi" : "Haftalık Yağış"}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold font-mono">{latest.metrics.basinRainMm}</p>
-              <p className="text-xs text-muted-foreground">mm (havza ortalaması)</p>
-              <p className="text-xs mt-2">
-                Skor: <span className="font-mono font-semibold">{Math.round(latest.scores.rainScore)}</span>/100
-              </p>
+              {isHydroLive ? (
+                <>
+                  <p className="text-3xl font-bold font-mono">{hydro.data!.summary.avgDischargeM3s}</p>
+                  <p className="text-xs text-muted-foreground">m³/s (havza ortalaması)</p>
+                  <p className="text-xs mt-2">
+                    Skor: <span className="font-mono font-semibold">{Math.round(hydroCrisis!.dischargeScore)}</span>/100
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold font-mono">{latest.metrics.basinRainMm}</p>
+                  <p className="text-xs text-muted-foreground">mm (havza ortalaması)</p>
+                  <p className="text-xs mt-2">
+                    Skor: <span className="font-mono font-semibold">{Math.round(latest.scores.rainScore)}</span>/100
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -187,10 +245,17 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Skor Detayları</CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2">
+                Skor Detayları
+                {isHydroLive && <Badge variant="secondary" className="text-[10px]">Hidrolojik</Badge>}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <ScoreBreakdown scores={latest.scores} />
+              {hydroCrisis ? (
+                <HydroCrisisBreakdown scores={hydroCrisis} />
+              ) : (
+                <ScoreBreakdown scores={latest.scores} />
+              )}
             </CardContent>
           </Card>
 

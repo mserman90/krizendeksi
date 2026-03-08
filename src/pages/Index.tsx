@@ -12,9 +12,12 @@ import HydroCrisisBreakdown from "@/components/HydroCrisisBreakdown";
 import BasinInfo from "@/components/BasinInfo";
 import BasinMap from "@/components/BasinMap";
 import HydroPanel from "@/components/HydroPanel";
+import CrisisAlertBanner from "@/components/CrisisAlertBanner";
+import CrisisAlertHistory from "@/components/CrisisAlertHistory";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
-import { Activity, Droplets, CloudRain, Newspaper, Map, Database, Zap } from "lucide-react";
+import { useCrisisAlerts } from "@/hooks/useCrisisAlerts";
+import { Activity, Droplets, CloudRain, Newspaper, Map, Database, Zap, Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
@@ -22,6 +25,7 @@ const Index = () => {
   const mockNews = useMemo(() => generateMockNews(), []);
   const latest = timeSeries[timeSeries.length - 1];
   const hydro = useHydroData();
+  const { alerts, loading: alertsLoading } = useCrisisAlerts();
 
   // Auto-fetch hydro data on mount
   useEffect(() => {
@@ -104,6 +108,9 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Alert Banner */}
+        <CrisisAlertBanner crisisIndex={crisisValue} />
+
         {/* Row 1: Crisis Gauge + Score Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
@@ -245,7 +252,22 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Row 6: Score Breakdown + Basin Info */}
+        {/* Row 6: Alert History */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Bell className="h-4 w-4" /> Kriz Uyarı Geçmişi
+              {alerts.length > 0 && (
+                <Badge variant="destructive" className="text-[10px]">{alerts.length}</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CrisisAlertHistory alerts={alerts} loading={alertsLoading} />
+          </CardContent>
+        </Card>
+
+        {/* Row 7: Score Breakdown + Basin Info */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="pb-2">

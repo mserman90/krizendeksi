@@ -204,17 +204,20 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       {/* Row 4: Save & Weekly Trend */}
       <Card className="dashboard-card">
         <CardHeader className="pb-2">
-          <CardTitle className="section-title flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-primary" /> Haftalık Trend
+          <CardTitle className="section-title flex items-center gap-2 flex-wrap">
+            <TrendingUp className="h-4 w-4 text-primary" /> 
+            <span className="hidden sm:inline">Haftalık Trend</span>
+            <span className="sm:hidden">Trend</span>
             <div className="ml-auto">
               <Button
                 size="sm"
-                className="text-xs gap-1.5 font-semibold"
+                className="text-[11px] sm:text-xs gap-1 sm:gap-1.5 font-semibold h-7 sm:h-8"
                 onClick={handleSave}
                 disabled={saving || !isHydroLive}
               >
-                <Save className="h-3.5 w-3.5" />
-                {saving ? "Kaydediliyor..." : "Verileri Kaydet"}
+                <Save className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <span className="hidden sm:inline">{saving ? "Kaydediliyor..." : "Verileri Kaydet"}</span>
+                <span className="sm:hidden">{saving ? "..." : "Kaydet"}</span>
               </Button>
             </div>
           </CardTitle>

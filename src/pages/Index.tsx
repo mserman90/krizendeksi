@@ -263,16 +263,16 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/50 sticky top-0 z-10 backdrop-blur-md" style={{ background: 'var(--gradient-header)' }}>
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Activity className="h-5 w-5 text-primary" />
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <div>
-              <h1 className="text-base font-bold tracking-tight text-primary-foreground">
-                Sınıraşan Su Havzaları OSINT İzleme Paneli
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-base font-bold tracking-tight text-primary-foreground truncate">
+                Sınıraşan Su Havzaları OSINT
               </h1>
-              <p className="text-[11px] text-primary-foreground/60 font-medium">
+              <p className="text-[10px] sm:text-[11px] text-primary-foreground/60 font-medium hidden sm:block">
                 Gerçek zamanlı hidrolojik izleme · Open-Meteo · GloFAS · NASA POWER
               </p>
             </div>
@@ -281,19 +281,21 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-5 space-y-5">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-5 space-y-4 sm:space-y-5">
         <Tabs value={activeBasin} onValueChange={setActiveBasin} className="w-full">
-          <TabsList className="w-full flex flex-wrap h-auto gap-1.5 bg-card border border-border p-1.5 rounded-lg">
-            {BASINS.map((basin) => (
-              <TabsTrigger
-                key={basin.id}
-                value={basin.id}
-                className="text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm flex-1 min-w-[120px] rounded-md transition-all"
-              >
-                {basin.shortName}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+            <TabsList className="w-full flex h-auto gap-1 sm:gap-1.5 bg-card border border-border p-1 sm:p-1.5 rounded-lg min-w-max sm:min-w-0 sm:flex-wrap">
+              {BASINS.map((basin) => (
+                <TabsTrigger
+                  key={basin.id}
+                  value={basin.id}
+                  className="text-[11px] sm:text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm flex-1 min-w-[90px] sm:min-w-[120px] rounded-md transition-all px-2 sm:px-3 py-1.5"
+                >
+                  {basin.shortName}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           {BASINS.map((basin) => (
             <TabsContent key={basin.id} value={basin.id} className="mt-4">

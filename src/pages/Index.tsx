@@ -53,6 +53,7 @@ const Index = () => {
   const crisisValue = hydroCrisis?.weeklyIndex ?? latest.scores.weeklyIndex;
   const { label } = getCrisisLevel(crisisValue);
   const isHydroLive = hydroCrisis !== null;
+  const [alertThreshold, setAlertThreshold] = useState(60);
 
   const [liveNews, setLiveNews] = useState<NewsItem[] | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);
@@ -109,7 +110,7 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* Alert Banner */}
-        <CrisisAlertBanner crisisIndex={crisisValue} />
+        <CrisisAlertBanner crisisIndex={crisisValue} threshold={alertThreshold} />
 
         {/* Row 1: Crisis Gauge + Score Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -121,8 +122,29 @@ const Index = () => {
                 {hydro.loading && <span className="text-[10px] text-muted-foreground animate-pulse">Yükleniyor...</span>}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex justify-center">
-              <CrisisGauge value={crisisValue} />
+            <CardContent className="space-y-3">
+              <div className="flex justify-center">
+                <CrisisGauge value={crisisValue} />
+              </div>
+              <div className="space-y-1.5 pt-2 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">Uyarı Eşiği</span>
+                  <span className="text-xs font-mono font-semibold">{alertThreshold}</span>
+                </div>
+                <input
+                  type="range"
+                  min={20}
+                  max={90}
+                  step={5}
+                  value={alertThreshold}
+                  onChange={(e) => setAlertThreshold(Number(e.target.value))}
+                  className="w-full h-1.5 accent-primary cursor-pointer"
+                />
+                <div className="flex justify-between text-[9px] text-muted-foreground">
+                  <span>20</span>
+                  <span>90</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
 

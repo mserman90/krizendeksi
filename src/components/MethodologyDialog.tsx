@@ -18,8 +18,8 @@ const MethodologyDialog = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-muted-foreground hover:text-foreground">
-          <Info className="h-3 w-3 mr-1" />
+        <Button variant="outline" size="sm" className="h-7 px-3 text-xs gap-1 ml-auto">
+          <Info className="h-3.5 w-3.5" />
           Metodoloji
         </Button>
       </DialogTrigger>

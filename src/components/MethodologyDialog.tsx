@@ -130,10 +130,13 @@ const MethodologyDialog = () => {
         <Tabs defaultValue="hydro" className="w-full">
           <TabsList className="w-full mb-4">
             <TabsTrigger value="hydro" className="flex-1 gap-1 text-xs">
-              <Droplets className="h-3.5 w-3.5" /> Hidrolojik Yöntem
+              <Droplets className="h-3.5 w-3.5" /> Hidrolojik
             </TabsTrigger>
             <TabsTrigger value="nato" className="flex-1 gap-1 text-xs">
-              <Shield className="h-3.5 w-3.5" /> NATO 360° / 7BLR
+              <Shield className="h-3.5 w-3.5" /> NATO 360°
+            </TabsTrigger>
+            <TabsTrigger value="compare" className="flex-1 gap-1 text-xs">
+              <GitCompareArrows className="h-3.5 w-3.5" /> Karşılaştırma
             </TabsTrigger>
           </TabsList>
 

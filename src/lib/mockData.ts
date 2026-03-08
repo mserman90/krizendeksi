@@ -1,5 +1,4 @@
 // Fırat-Dicle Weekly OSINT - Data Layer
-// Translated from Python: normalize() + compute_weekly_crisis_index()
 
 export interface WeeklyMetrics {
   weekStart: string;
@@ -29,7 +28,6 @@ export interface WeeklyData {
   newsCount: number;
 }
 
-// Direct translation of Python normalize()
 export function normalize(
   value: number | null,
   minVal: number,
@@ -44,7 +42,6 @@ export function normalize(
   return ratio * 100.0;
 }
 
-// Direct translation of Python compute_weekly_crisis_index()
 export function computeWeeklyCrisisIndex(
   reservoirAreaKm2: number | null,
   basinRainMm: number | null,
@@ -55,13 +52,8 @@ export function computeWeeklyCrisisIndex(
   const areaScore = normalize(reservoirAreaKm2, histAreaRange[0], histAreaRange[1], true);
   const rainScore = normalize(basinRainMm, histRainRange[0], histRainRange[1], true);
   const newsScore = normalize(Math.min(newsCount, 50), 0, 50, false);
-
   const weights = { area: 0.4, rain: 0.3, news: 0.3 };
-  const weeklyIndex =
-    weights.area * areaScore +
-    weights.rain * rainScore +
-    weights.news * newsScore;
-
+  const weeklyIndex = weights.area * areaScore + weights.rain * rainScore + weights.news * newsScore;
   return { areaScore, rainScore, newsScore, weeklyIndex };
 }
 
@@ -70,9 +62,13 @@ export function computeWeeklyCrisisIndex(
 export interface HydroCrisisScores {
   precipScore: number;
   dischargeScore: number;
+  dischargeAnomalyScore: number;
   soilMoistureScore: number;
   evapScore: number;
   snowScore: number;
+  humidityScore: number;
+  windScore: number;
+  solarScore: number;
   weeklyIndex: number;
 }
 
@@ -82,42 +78,54 @@ export interface HydroCrisisInput {
   avgSoilMoisture: number;
   totalEvapMm: number;
   totalSnowfallMm: number;
+  avgHumidity: number;
+  avgWindSpeed: number;
+  avgSolarRadiation: number;
+  dischargeAnomalyRatio: number;
 }
 
 /**
  * Compute crisis index from real hydrological data.
  * Higher index = higher crisis risk.
  *
- * Historical reference ranges for Fırat-Dicle basin (14-day):
- * - Precipitation: 0–80 mm (inverted: less rain = more crisis)
- * - Discharge: 200–2000 m³/s (inverted: less flow = more crisis)
- * - Soil moisture: 0.05–0.45 m³/m³ (inverted: drier = more crisis)
- * - Evapotranspiration: 0–70 mm (not inverted: more evap = more crisis)
- * - Snowfall: 0–50 mm (inverted: less snow = less future recharge)
+ * 9-component weighted formula:
+ * - Discharge (absolute): 20% — less flow = more crisis (inverted)
+ * - Discharge anomaly: 10% — ratio < 1 = below median = crisis (inverted)
+ * - Precipitation: 18% — less rain = more crisis (inverted)
+ * - Soil moisture: 14% — drier = more crisis (inverted)
+ * - Evapotranspiration: 10% — more evap = more crisis
+ * - Solar radiation: 8% — more radiation = more evaporation pressure
+ * - Humidity: 8% — lower humidity = more evap = more crisis (inverted)
+ * - Wind speed: 6% — more wind = more evaporation
+ * - Snowfall: 6% — less snow = less future recharge (inverted)
  */
 export function computeHydroCrisisIndex(input: HydroCrisisInput): HydroCrisisScores {
   const precipScore = normalize(input.totalPrecipMm, 0, 80, true);
   const dischargeScore = normalize(input.avgDischargeM3s, 200, 2000, true);
+  const dischargeAnomalyScore = normalize(input.dischargeAnomalyRatio, 0.3, 1.5, true); // ratio < 1 means below median
   const soilMoistureScore = normalize(input.avgSoilMoisture, 0.05, 0.45, true);
   const evapScore = normalize(input.totalEvapMm, 0, 70, false);
   const snowScore = normalize(input.totalSnowfallMm, 0, 50, true);
-
-  const weights = {
-    precip: 0.25,
-    discharge: 0.30,
-    soilMoisture: 0.20,
-    evap: 0.15,
-    snow: 0.10,
-  };
+  const humidityScore = normalize(input.avgHumidity, 20, 90, true); // low humidity = more evap pressure
+  const windScore = normalize(input.avgWindSpeed, 0, 60, false); // high wind = more evap
+  const solarScore = normalize(input.avgSolarRadiation, 1, 8, false); // high radiation = evap pressure (kWh/m²/day)
 
   const weeklyIndex =
-    weights.precip * precipScore +
-    weights.discharge * dischargeScore +
-    weights.soilMoisture * soilMoistureScore +
-    weights.evap * evapScore +
-    weights.snow * snowScore;
+    0.18 * precipScore +
+    0.20 * dischargeScore +
+    0.10 * dischargeAnomalyScore +
+    0.14 * soilMoistureScore +
+    0.10 * evapScore +
+    0.08 * solarScore +
+    0.08 * humidityScore +
+    0.06 * windScore +
+    0.06 * snowScore;
 
-  return { precipScore, dischargeScore, soilMoistureScore, evapScore, snowScore, weeklyIndex };
+  return {
+    precipScore, dischargeScore, dischargeAnomalyScore,
+    soilMoistureScore, evapScore, snowScore,
+    humidityScore, windScore, solarScore, weeklyIndex,
+  };
 }
 
 // ---------- Mock Data Generation ----------
@@ -128,10 +136,7 @@ function getWeekDate(weeksAgo: number): { start: string; end: string } {
   end.setDate(end.getDate() - weeksAgo * 7);
   const start = new Date(end);
   start.setDate(start.getDate() - 7);
-  return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10),
-  };
+  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
 }
 
 function seededRandom(seed: number): number {
@@ -141,37 +146,23 @@ function seededRandom(seed: number): number {
 
 export function generateWeeklyTimeSeries(weeks = 12): WeeklyData[] {
   const data: WeeklyData[] = [];
-
   for (let i = weeks - 1; i >= 0; i--) {
     const { start, end } = getWeekDate(i);
-    // Seasonal variation: summer = lower area, winter = higher
     const monthIndex = new Date(end).getMonth();
     const seasonFactor = Math.cos(((monthIndex - 1) / 12) * 2 * Math.PI);
-
     const baseArea = 500 + seasonFactor * 150;
     const area = baseArea + (seededRandom(i * 31 + 7) - 0.5) * 120;
-
     const baseRain = 30 + seasonFactor * 25;
     const rain = Math.max(0, baseRain + (seededRandom(i * 17 + 3) - 0.5) * 40);
-
     const newsCount = Math.floor(3 + seededRandom(i * 43 + 11) * 18);
-
     const metrics: WeeklyMetrics = {
-      weekStart: start,
-      weekEnd: end,
+      weekStart: start, weekEnd: end,
       reservoirAreaKm2: Math.round(area * 10) / 10,
       basinRainMm: Math.round(rain * 10) / 10,
     };
-
-    const scores = computeWeeklyCrisisIndex(
-      metrics.reservoirAreaKm2,
-      metrics.basinRainMm,
-      newsCount
-    );
-
+    const scores = computeWeeklyCrisisIndex(metrics.reservoirAreaKm2, metrics.basinRainMm, newsCount);
     data.push({ metrics, scores, newsCount });
   }
-
   return data;
 }
 
@@ -190,18 +181,11 @@ export function generateMockNews(): NewsItem[] {
     { title: "GAP bölgesinde su tasarrufu kampanyası", desc: "Yerel yönetimler su tasarrufu için farkındalık kampanyası başlattı.", source: "TRT" },
     { title: "Suriye'de Fırat üzerindeki barajlarda elektrik üretimi düştü", desc: "Tabqa barajında üretim %30 azaldı.", source: "BBC" },
   ];
-
   const now = new Date();
   return headlines.map((h, i) => {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
-    return {
-      title: h.title,
-      link: "#",
-      description: h.desc,
-      pubDate: d.toISOString().slice(0, 10),
-      source: h.source,
-    };
+    return { title: h.title, link: "#", description: h.desc, pubDate: d.toISOString().slice(0, 10), source: h.source };
   });
 }
 

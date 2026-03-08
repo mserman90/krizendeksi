@@ -38,6 +38,10 @@ const Index = () => {
       avgSoilMoisture: s.avgSoilMoisture,
       totalEvapMm: s.totalEvapMm,
       totalSnowfallMm: s.totalSnowfallMm,
+      avgHumidity: s.avgHumidity,
+      avgWindSpeed: s.avgWindSpeed,
+      avgSolarRadiation: s.avgSolarRadiation,
+      dischargeAnomalyRatio: s.dischargeAnomalyRatio,
     });
   }, [hydro.data]);
 

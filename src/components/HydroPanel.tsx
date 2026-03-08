@@ -112,43 +112,18 @@ const HydroPanel = ({ data, loading, error, warnings, onFetch }: HydroPanelProps
       {data && (
         <>
           {/* Summary Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-            <SummaryCard
-              icon={CloudRain}
-              label="Toplam Yağış"
-              value={`${data.summary.totalPrecipMm}`}
-              unit="mm"
-            />
-            <SummaryCard
-              icon={Snowflake}
-              label="Kar Yağışı"
-              value={`${data.summary.totalSnowfallMm}`}
-              unit="mm"
-            />
-            <SummaryCard
-              icon={Wind}
-              label="Buharlaşma"
-              value={`${data.summary.totalEvapMm}`}
-              unit="mm"
-            />
-            <SummaryCard
-              icon={Droplets}
-              label="Toprak Nemi"
-              value={`${(data.summary.avgSoilMoisture * 100).toFixed(1)}`}
-              unit="%"
-            />
-            <SummaryCard
-              icon={Waves}
-              label="Ort. Debi"
-              value={`${data.summary.avgDischargeM3s}`}
-              unit="m³/s"
-            />
-            <SummaryCard
-              icon={Thermometer}
-              label="Ort. Sıcaklık"
-              value={`${data.summary.avgTempC}`}
-              unit="°C"
-            />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+            <SummaryCard icon={CloudRain} label="Toplam Yağış" value={`${data.summary.totalPrecipMm}`} unit="mm" />
+            <SummaryCard icon={Waves} label="Ort. Debi" value={`${data.summary.avgDischargeM3s}`} unit="m³/s" />
+            <SummaryCard icon={Droplets} label="Toprak Nemi" value={`${(data.summary.avgSoilMoisture * 100).toFixed(1)}`} unit="%" />
+            <SummaryCard icon={Wind} label="Buharlaşma" value={`${data.summary.totalEvapMm}`} unit="mm" />
+            <SummaryCard icon={Thermometer} label="Ort. Sıcaklık" value={`${data.summary.avgTempC}`} unit="°C" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <SummaryCard icon={Snowflake} label="Kar Yağışı" value={`${data.summary.totalSnowfallMm}`} unit="mm" />
+            <SummaryCard icon={Droplets} label="Nem Oranı" value={`${data.summary.avgHumidity}`} unit="%" />
+            <SummaryCard icon={Wind} label="Rüzgar Hızı" value={`${data.summary.avgWindSpeed}`} unit="km/s" />
+            <SummaryCard icon={Thermometer} label="Güneş Rad." value={`${data.summary.avgSolarRadiation}`} unit="kWh/m²" />
           </div>
 
           {/* Charts */}

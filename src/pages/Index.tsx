@@ -103,17 +103,39 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         <Card className="dashboard-card">
           <CardHeader className="pb-2">
-            <CardTitle className="section-title flex items-center gap-2">
+            <CardTitle className="section-title flex items-center gap-2 flex-wrap">
               <Activity className="h-4 w-4 text-primary" /> Kriz Endeksi
               {isHydroLive && <Badge variant="secondary" className="text-[10px] font-medium">● Canlı</Badge>}
               {hydro.loading && <span className="text-[10px] text-muted-foreground animate-pulse">Yükleniyor...</span>}
               <MethodologyDialog />
             </CardTitle>
+            {/* Method Toggle */}
+            <div className="flex gap-1 mt-2">
+              <Button
+                variant={method === "hydro" ? "default" : "outline"}
+                size="sm"
+                className="h-6 text-[10px] px-2 gap-1"
+                onClick={() => setMethod("hydro")}
+              >
+                <Droplets className="h-3 w-3" /> Hidrolojik
+              </Button>
+              <Button
+                variant={method === "nato" ? "default" : "outline"}
+                size="sm"
+                className="h-6 text-[10px] px-2 gap-1"
+                onClick={() => setMethod("nato")}
+              >
+                <Shield className="h-3 w-3" /> NATO CCSIA
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-center">
               <CrisisGauge value={crisisValue} />
             </div>
+            {method === "nato" && (
+              <p className="text-[10px] text-center text-muted-foreground italic">NATO Kırılganlık Endeksi</p>
+            )}
             <div className="space-y-1.5 pt-3 border-t border-border/40">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-muted-foreground font-medium">Uyarı Eşiği</span>

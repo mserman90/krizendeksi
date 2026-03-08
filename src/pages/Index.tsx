@@ -269,11 +269,17 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
           <CardHeader className="pb-2">
             <CardTitle className="section-title flex items-center gap-2">
               Skor Detayları
-              {isHydroLive && <Badge variant="secondary" className="text-[10px] font-medium">● Hidrolojik</Badge>}
+              {isHydroLive && (
+                <Badge variant="secondary" className="text-[10px] font-medium">
+                  {method === "nato" ? "● NATO CCSIA" : "● Hidrolojik"}
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {hydroCrisis ? (
+            {method === "nato" && natoCrisis ? (
+              <NatoCrisisBreakdown scores={natoCrisis} />
+            ) : hydroCrisis ? (
               <HydroCrisisBreakdown scores={hydroCrisis} />
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4 animate-pulse">Veri yükleniyor...</p>

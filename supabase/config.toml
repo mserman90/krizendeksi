@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.fetch-hydro-data]
 verify_jwt = false
+
+[functions.check-crisis]
+verify_jwt = false

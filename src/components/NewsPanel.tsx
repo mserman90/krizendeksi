@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Newspaper, RefreshCw, Wifi, WifiOff, Filter, Globe, Languages } from "lucide-react";
+import { Newspaper, RefreshCw, Wifi, WifiOff, Filter, Globe, Languages, Timer, TimerOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -18,6 +18,9 @@ interface NewsPanelProps {
   error?: string | null;
   filterEnabled?: boolean;
   onFilterChange?: (enabled: boolean) => void;
+  autoRefresh?: boolean;
+  onAutoRefreshChange?: (enabled: boolean) => void;
+  lastUpdated?: Date | null;
 }
 
 const NewsPanel = ({
@@ -28,6 +31,9 @@ const NewsPanel = ({
   error,
   filterEnabled = true,
   onFilterChange,
+  autoRefresh,
+  onAutoRefreshChange,
+  lastUpdated,
 }: NewsPanelProps) => {
   const [langFilter, setLangFilter] = useState<LanguageFilter>("all");
 

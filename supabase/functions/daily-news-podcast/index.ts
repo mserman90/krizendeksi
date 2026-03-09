@@ -150,11 +150,11 @@ Deno.serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const siteUrl = "https://krizendeksi.lovable.app";
 
-    console.log("Step 1: Fetching RSS news...");
-    const { items, errors } = await fetchAllNews();
+    console.log("Step 1: Fetching news from database...");
+    const { items, errors } = await fetchNewsFromDB(sb);
     const trCount = items.filter(i => i.language === "tr").length;
     const enCount = items.filter(i => i.language === "en").length;
-    console.log(`Fetched ${items.length} items (${trCount} TR, ${enCount} EN)`);
+    console.log(`Fetched ${items.length} items from DB (${trCount} TR, ${enCount} EN)`);
 
     let summary = "Bugün ilgili haber bulunamadı.";
     if (items.length > 0) {

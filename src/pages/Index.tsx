@@ -16,13 +16,14 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
 import { useCrisisAlerts } from "@/hooks/useCrisisAlerts";
 import { BASINS, type BasinConfig } from "@/lib/basinConfig";
-import { Activity, Droplets, CloudRain, Map, Database, Bell, TrendingUp, Save, Shield, Newspaper } from "lucide-react";
+import { Activity, Droplets, CloudRain, Map, Database, Bell, TrendingUp, Save, Shield, Newspaper, Archive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { saveHydroSnapshot } from "@/lib/api/snapshotApi";
 import WeeklyTrendChart from "@/components/WeeklyTrendChart";
 import ActionRecommendations from "@/components/ActionRecommendations";
 import NewsPanel from "@/components/NewsPanel";
+import NewsArchive from "@/components/NewsArchive";
 import { useRssNews } from "@/hooks/useRssNews";
 import { toast } from "sonner";
 
@@ -381,6 +382,18 @@ const Index = () => {
               onAutoRefreshChange={rss.setAutoRefresh}
               lastUpdated={rss.lastUpdated}
             />
+          </CardContent>
+        </Card>
+
+        {/* News Archive */}
+        <Card className="dashboard-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="section-title flex items-center gap-2">
+              <Archive className="h-4 w-4 text-primary" /> Haber Arşivi
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <NewsArchive />
           </CardContent>
         </Card>
 

@@ -199,11 +199,14 @@ export default function DailyBulletin() {
 
   const triggerGeneration = async () => {
     try {
-      const { error } = await supabase.functions.invoke("daily-news-podcast");
+      toast.info("Bülten oluşturuluyor...");
+      const { data, error } = await supabase.functions.invoke("daily-news-podcast");
       if (error) throw error;
+      toast.success(`Bülten oluşturuldu! ${data?.newsCount || 0} haber analiz edildi.`);
       refetch();
     } catch (e) {
       console.error("Generation error:", e);
+      toast.error("Bülten oluşturulurken hata oluştu");
     }
   };
 

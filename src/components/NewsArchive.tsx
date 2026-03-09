@@ -89,6 +89,26 @@ const NewsArchive = () => {
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
+        <div className="flex items-center gap-2">
+          <CalendarDays className="h-3 w-3 text-muted-foreground shrink-0" />
+          <ToggleGroup
+            type="single"
+            value={dateRange}
+            onValueChange={(v) => { if (v) { setDateRange(v as DateRange); setPage(0); } }}
+            size="sm"
+            className="gap-0.5"
+          >
+            <ToggleGroupItem value="7" className="h-5 px-2 text-[10px] rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+              7 gün
+            </ToggleGroupItem>
+            <ToggleGroupItem value="30" className="h-5 px-2 text-[10px] rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+              30 gün
+            </ToggleGroupItem>
+            <ToggleGroupItem value="all" className="h-5 px-2 text-[10px] rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+              Tümü
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
         <span className="text-[10px] text-muted-foreground">
           Toplam: {total} haber
         </span>

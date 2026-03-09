@@ -95,6 +95,42 @@ export type Database = {
         }
         Relationships: []
       }
+      news_articles: {
+        Row: {
+          created_at: string
+          description: string | null
+          fetched_at: string
+          id: string
+          language: string | null
+          link: string
+          pub_date: string | null
+          source: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          fetched_at?: string
+          id?: string
+          language?: string | null
+          link: string
+          pub_date?: string | null
+          source: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          fetched_at?: string
+          id?: string
+          language?: string | null
+          link?: string
+          pub_date?: string | null
+          source?: string
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

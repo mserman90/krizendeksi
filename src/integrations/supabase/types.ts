@@ -74,6 +74,33 @@ export type Database = {
         }
         Relationships: []
       }
+      email_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          status: string
+          unsubscribe_token: string | null
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          status?: string
+          unsubscribe_token?: string | null
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          status?: string
+          unsubscribe_token?: string | null
+          unsubscribed_at?: string | null
+        }
+        Relationships: []
+      }
       hydro_snapshots: {
         Row: {
           avg_discharge_m3s: number

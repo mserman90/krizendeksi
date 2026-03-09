@@ -78,7 +78,7 @@ const NewsArchive = () => {
 
   useEffect(() => {
     fetchArticles();
-  }, [page, langFilter, dateRange]);
+  }, [page, langFilter, dateRange, debouncedQuery]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 

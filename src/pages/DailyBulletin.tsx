@@ -1,16 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import ThemeToggle from "@/components/ThemeToggle";
+import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 import { Link } from "react-router-dom";
 import {
   Newspaper, Play, Pause, Square, Volume2, VolumeX,
   Calendar, ArrowLeft, RefreshCw, Radio, ChevronLeft, ChevronRight
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface DailySummary {
   id: string;

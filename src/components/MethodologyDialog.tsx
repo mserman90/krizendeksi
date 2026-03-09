@@ -192,6 +192,96 @@ const MethodologyDialog = () => {
                 <li><strong>NASA POWER API</strong> — Güneş radyasyonu (ALLSKY_SFC_SW_DWN)</li>
               </ul>
             </section>
+
+            <section className="space-y-2">
+              <h3 className="font-semibold text-base">Bilimsel Referanslar (APA 7)</h3>
+              <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2.5 text-[11px] text-muted-foreground leading-relaxed">
+
+                <p className="font-semibold text-foreground text-xs mb-1">Normalizasyon & Bileşik Endeks Yöntemi</p>
+
+                <p className="pl-3 -indent-3">
+                  Svoboda, M., Hayes, M., & Wood, D. (2012). <em>Standardized precipitation index user guide</em> (WMO-No. 1090). World Meteorological Organization.
+                  <br /><a href="https://library.wmo.int/idurl/4/39629" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://library.wmo.int/idurl/4/39629</a>
+                </p>
+
+                <p className="pl-3 -indent-3">
+                  Hao, Z., & AghaKouchak, A. (2013). Multivariate standardized drought index: A parametric multi-index model. <em>Advances in Water Resources</em>, <em>57</em>, 12–18.
+                  <br /><a href="https://doi.org/10.1016/j.advwatres.2013.03.009" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.1016/j.advwatres.2013.03.009</a>
+                </p>
+
+                <p className="font-semibold text-foreground text-xs mb-1 mt-3">Nehir Debisi & GloFAS</p>
+
+                <p className="pl-3 -indent-3">
+                  Harrigan, S., Zsoter, E., Alfieri, L., Prudhomme, C., Salamon, P., Wetterhall, F., Barnard, C., Cloke, H., & Pappenberger, F. (2020). GloFAS-ERA5 operational global river discharge reanalysis 1979–present. <em>Earth System Science Data</em>, <em>12</em>(3), 2043–2060.
+                  <br /><a href="https://doi.org/10.5194/essd-12-2043-2020" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.5194/essd-12-2043-2020</a>
+                </p>
+
+                <p className="pl-3 -indent-3">
+                  Alfieri, L., Burek, P., Dutra, E., Krzeminski, B., Muraro, D., Thielen, J., & Pappenberger, F. (2013). GloFAS – global ensemble streamflow forecasting and flood early warning. <em>Hydrology and Earth System Sciences</em>, <em>17</em>(3), 1161–1175.
+                  <br /><a href="https://doi.org/10.5194/hess-17-1161-2013" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.5194/hess-17-1161-2013</a>
+                </p>
+
+                <p className="font-semibold text-foreground text-xs mb-1 mt-3">Evapotranspirasyon (FAO Penman-Monteith)</p>
+
+                <p className="pl-3 -indent-3">
+                  Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998). <em>Crop evapotranspiration: Guidelines for computing crop water requirements</em> (FAO Irrigation and Drainage Paper No. 56). Food and Agriculture Organization of the United Nations.
+                  <br /><a href="https://www.fao.org/4/X0490E/X0490E00.htm" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://www.fao.org/4/X0490E/X0490E00.htm</a>
+                </p>
+
+                <p className="font-semibold text-foreground text-xs mb-1 mt-3">Toprak Nemi & Kuraklık</p>
+
+                <p className="pl-3 -indent-3">
+                  Dorigo, W. A., Wagner, W., Hohensinn, R., Hahn, S., Paulik, C., Xaver, A., Gruber, A., Drusch, M., Mecklenburg, S., van Oevelen, P., Robock, A., & Jackson, T. (2011). The International Soil Moisture Network: A data hosting facility for global in situ soil moisture measurements. <em>Hydrology and Earth System Sciences</em>, <em>15</em>(5), 1675–1698.
+                  <br /><a href="https://doi.org/10.5194/hess-15-1675-2011" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.5194/hess-15-1675-2011</a>
+                </p>
+
+                <p className="pl-3 -indent-3">
+                  Sheffield, J., & Wood, E. F. (2008). Global trends and variability in soil moisture and drought characteristics, 1950–2000, from observation-driven simulations of the terrestrial hydrologic cycle. <em>Journal of Climate</em>, <em>21</em>(3), 432–458.
+                  <br /><a href="https://doi.org/10.1175/2007JCLI1822.1" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.1175/2007JCLI1822.1</a>
+                </p>
+
+                <p className="font-semibold text-foreground text-xs mb-1 mt-3">Güneş Radyasyonu (NASA POWER)</p>
+
+                <p className="pl-3 -indent-3">
+                  Stackhouse, P. W., Zhang, T., Westberg, D., Barnett, A. J., Bristow, T., Macpherson, B., & Hoell, J. M. (2018). POWER release 8 (with GIS applications) methodology (Version 2.0). NASA Langley Research Center.
+                  <br /><a href="https://power.larc.nasa.gov/docs/methodology/" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://power.larc.nasa.gov/docs/methodology/</a>
+                </p>
+
+                <p className="font-semibold text-foreground text-xs mb-1 mt-3">Sınıraşan Su Kaynakları & Fırat-Dicle Havzası</p>
+
+                <p className="pl-3 -indent-3">
+                  Yetim, F. (2023). The hydropolitics of the Euphrates–Tigris River Basin: Transboundary water disputes in the Middle East. <em>Water Policy</em>, <em>25</em>(3), 312–330.
+                  <br /><a href="https://doi.org/10.2166/wp.2023.182" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.2166/wp.2023.182</a>
+                </p>
+
+                <p className="pl-3 -indent-3">
+                  Voss, K. A., Famiglietti, J. S., Lo, M., de Linage, C., Rodell, M., & Swenson, S. C. (2013). Groundwater depletion in the Middle East from GRACE with implications for transboundary water management in the Tigris-Euphrates-Western Iran region. <em>Water Resources Research</em>, <em>49</em>(2), 904–914.
+                  <br /><a href="https://doi.org/10.1002/wrcr.20078" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.1002/wrcr.20078</a>
+                </p>
+
+                <p className="pl-3 -indent-3">
+                  Kavvas, M. L., Chen, Z. Q., Dogrul, C., Yoon, J. Y., Ohara, N., Liang, L., Aksoy, H., Anderson, M. L., Yoshitani, J., Fukami, K., & Matsuura, T. (2006). Watershed environmental hydrology (WEHY) model based on upscaled conservation equations: Hydrologic module. <em>Journal of Hydrologic Engineering</em>, <em>11</em>(2), 173–181.
+                  <br /><a href="https://doi.org/10.1061/(ASCE)1084-0699(2006)11:2(173)" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.1061/(ASCE)1084-0699(2006)11:2(173)</a>
+                </p>
+
+                <p className="font-semibold text-foreground text-xs mb-1 mt-3">Bileşik Kuraklık & Su Stresi Endeksleri</p>
+
+                <p className="pl-3 -indent-3">
+                  Mishra, A. K., & Singh, V. P. (2010). A review of drought concepts. <em>Journal of Hydrology</em>, <em>391</em>(1–2), 202–216.
+                  <br /><a href="https://doi.org/10.1016/j.jhydrol.2010.07.012" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.1016/j.jhydrol.2010.07.012</a>
+                </p>
+
+                <p className="pl-3 -indent-3">
+                  Keyantash, J., & Dracup, J. A. (2002). The quantification of drought: An evaluation of drought indices. <em>Bulletin of the American Meteorological Society</em>, <em>83</em>(8), 1167–1180.
+                  <br /><a href="https://doi.org/10.1175/1520-0477-83.8.1167" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.1175/1520-0477-83.8.1167</a>
+                </p>
+
+                <p className="pl-3 -indent-3">
+                  Zargar, A., Sadiq, R., Naser, B., & Khan, F. I. (2011). A review of drought indices. <em>Environmental Reviews</em>, <em>19</em>, 333–349.
+                  <br /><a href="https://doi.org/10.1139/a11-013" target="_blank" rel="noopener" className="text-primary hover:underline text-[10px]">https://doi.org/10.1139/a11-013</a>
+                </p>
+              </div>
+            </section>
           </TabsContent>
 
           {/* NATO 360° / 7BLR Tab */}

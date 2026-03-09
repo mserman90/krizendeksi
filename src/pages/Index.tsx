@@ -377,6 +377,9 @@ const Index = () => {
               error={rss.error}
               filterEnabled={rss.filterEnabled}
               onFilterChange={rss.setFilterEnabled}
+              autoRefresh={rss.autoRefresh}
+              onAutoRefreshChange={rss.setAutoRefresh}
+              lastUpdated={rss.lastUpdated}
             />
           </CardContent>
         </Card>

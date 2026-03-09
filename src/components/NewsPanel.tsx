@@ -71,6 +71,31 @@ const NewsPanel = ({
         )}
       </div>
 
+      {/* Auto-refresh toggle */}
+      {onAutoRefreshChange && (
+        <div className="flex items-center gap-2 px-1">
+          {autoRefresh ? (
+            <Timer className="h-3 w-3 text-primary" />
+          ) : (
+            <TimerOff className="h-3 w-3 text-muted-foreground" />
+          )}
+          <Switch
+            id="auto-refresh"
+            checked={autoRefresh}
+            onCheckedChange={onAutoRefreshChange}
+            className="scale-75"
+          />
+          <Label htmlFor="auto-refresh" className="text-[10px] text-muted-foreground cursor-pointer">
+            {autoRefresh ? "Otomatik yenileme (15dk)" : "Otomatik yenileme kapalı"}
+          </Label>
+          {lastUpdated && (
+            <span className="text-[9px] text-muted-foreground ml-auto">
+              Son: {lastUpdated.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Language filter */}
       <div className="flex items-center gap-2 px-1">
         <Languages className="h-3 w-3 text-muted-foreground shrink-0" />

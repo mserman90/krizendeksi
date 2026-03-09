@@ -335,8 +335,16 @@ const Index = () => {
               </p>
             </div>
           </div>
-          <ThemeToggle />
-        </div>
+          <div className="flex items-center gap-2">
+            <Link to="/bulten">
+              <Button size="sm" variant="outline" className="gap-1 text-xs">
+                <Radio className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Günlük Bülten</span>
+                <span className="sm:hidden">Bülten</span>
+              </Button>
+            </Link>
+            <ThemeToggle />
+          </div>
       </header>
 
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-5 space-y-4 sm:space-y-5">

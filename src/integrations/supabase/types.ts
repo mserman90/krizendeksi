@@ -97,6 +97,8 @@ export type Database = {
       }
       news_articles: {
         Row: {
+          ai_summary: string | null
+          ai_tags: string[] | null
           created_at: string
           description: string | null
           fetched_at: string
@@ -108,6 +110,8 @@ export type Database = {
           title: string
         }
         Insert: {
+          ai_summary?: string | null
+          ai_tags?: string[] | null
           created_at?: string
           description?: string | null
           fetched_at?: string
@@ -119,6 +123,8 @@ export type Database = {
           title: string
         }
         Update: {
+          ai_summary?: string | null
+          ai_tags?: string[] | null
           created_at?: string
           description?: string | null
           fetched_at?: string

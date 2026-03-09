@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 interface RssItem {
@@ -11,20 +11,34 @@ interface RssItem {
   description: string;
   pubDate: string;
   source: string;
+  language: string;
 }
 
-const RSS_SOURCES: Record<string, string> = {
-  aa: "https://www.aa.com.tr/tr/rss/default?cat=guncel",
-  trt: "https://www.trthaber.com/xml_mobile.php?kat=guncel",
-  ntv: "https://www.ntv.com.tr/turkiye.rss",
-};
+const RSS_SOURCES: { name: string; url: string; language: string }[] = [
+  // Turkish sources
+  { name: "aa-tr", url: "https://www.aa.com.tr/tr/rss/default?cat=guncel", language: "tr" },
+  { name: "trt", url: "https://www.trthaber.com/xml_mobile.php?kat=guncel", language: "tr" },
+  { name: "ntv", url: "https://www.ntv.com.tr/turkiye.rss", language: "tr" },
+  // International English sources
+  { name: "reuters", url: "https://www.reutersagency.com/feed/?taxonomy=best-regions&post_type=best", language: "en" },
+  { name: "bbc", url: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml", language: "en" },
+  { name: "aljazeera", url: "https://www.aljazeera.com/xml/rss/all.xml", language: "en" },
+  // Anadolu Agency English
+  { name: "aa-en", url: "https://www.aa.com.tr/en/rss/default?cat=world", language: "en" },
+  // Al Jazeera Turkish
+  { name: "aljazeera-tr", url: "https://www.aljazeera.com.tr/xml/rss/all.xml", language: "tr" },
+];
 
-const KEYWORDS = /\b(Fırat|Dicle|Euphrates|Tigris|baraj|su seviyesi|su kesintisi|taşkın|kuraklık|nehir|sulama|GAP|DSİ|hidroelektrik|reservoir|dam|drought|flood|Keban|Ilısu|Karakaya|Atatürk Barajı|Birecik|su|enerji|elektrik|akış|debi|havza|göl|gölet|kurak|sel|yağmur|yağış|irrigation|water|energy|river|basin)\b/i;
+const KEYWORDS_TR = /\b(Fırat|Dicle|Euphrates|Tigris|baraj|su seviyesi|su kesintisi|taşkın|kuraklık|nehir|sulama|GAP|DSİ|hidroelektrik|reservoir|dam|drought|flood|Keban|Ilısu|Karakaya|Atatürk Barajı|Birecik|su|enerji|elektrik|akış|debi|havza|göl|gölet|kurak|sel|yağmur|yağış|irrigation|water|energy|river|basin)\b/i;
 
-function parseRssXml(xml: string, sourceName: string, applyFilter: boolean): RssItem[] {
+const KEYWORDS_EN = /\b(Euphrates|Tigris|transboundary water|dam|reservoir|drought|flood|water crisis|water security|Turkey water|Iraq water|Syria water|hydroelectric|irrigation|Keban|Ilisu|Karakaya|Ataturk Dam|Birecik|GAP project|water scarcity|river basin|water diplomacy|water conflict|Southeastern Anatolia|riparian)\b/i;
+
+function getKeywordRegex(language: string): RegExp {
+  return language === "tr" ? KEYWORDS_TR : KEYWORDS_EN;
+}
+
+function parseRssXml(xml: string, sourceName: string, language: string, applyFilter: boolean): RssItem[] {
   const items: RssItem[] = [];
-
-  // Simple XML parsing without external deps
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
   let match;
 
@@ -44,10 +58,10 @@ function parseRssXml(xml: string, sourceName: string, applyFilter: boolean): Rss
     const pubDate = (block.match(/<pubDate[^>]*>([\s\S]*?)<\/pubDate>/i)?.[1] || "").trim();
 
     const text = `${title} ${description}`;
-    if (applyFilter && !KEYWORDS.test(text)) {
+    if (applyFilter && !getKeywordRegex(language).test(text)) {
       continue;
     }
-    items.push({ title, link, description, pubDate, source: sourceName });
+    items.push({ title, link, description, pubDate, source: sourceName, language });
   }
 
   return items;
@@ -68,7 +82,7 @@ Deno.serve(async (req) => {
     const allItems: RssItem[] = [];
     const errors: string[] = [];
 
-    const fetchPromises = Object.entries(RSS_SOURCES).map(async ([name, url]) => {
+    const fetchPromises = RSS_SOURCES.map(async ({ name, url, language }) => {
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
@@ -88,7 +102,7 @@ Deno.serve(async (req) => {
         }
 
         const text = await resp.text();
-        const items = parseRssXml(text, name, applyFilter);
+        const items = parseRssXml(text, name, language, applyFilter);
         allItems.push(...items);
       } catch (e) {
         errors.push(`${name}: ${e instanceof Error ? e.message : String(e)}`);
@@ -97,7 +111,6 @@ Deno.serve(async (req) => {
 
     await Promise.all(fetchPromises);
 
-    // Sort by date descending
     allItems.sort((a, b) => {
       const da = new Date(a.pubDate).getTime() || 0;
       const db = new Date(b.pubDate).getTime() || 0;
@@ -107,7 +120,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        items: allItems.slice(0, 50),
+        items: allItems.slice(0, 80),
         total: allItems.length,
         errors: errors.length > 0 ? errors : undefined,
         fetchedAt: new Date().toISOString(),

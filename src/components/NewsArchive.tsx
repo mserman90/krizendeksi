@@ -61,6 +61,10 @@ const NewsArchive = () => {
         query = query.gte("fetched_at", since.toISOString());
       }
 
+      if (debouncedQuery) {
+        query = query.or(`title.ilike.%${debouncedQuery}%,description.ilike.%${debouncedQuery}%`);
+      }
+
       const { data, count, error } = await query;
       if (error) throw error;
       setArticles(data ?? []);

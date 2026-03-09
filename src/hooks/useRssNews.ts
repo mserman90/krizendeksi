@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { NewsItem } from "@/lib/mockData";
 import { fetchRssNews } from "@/lib/api/rssApi";
+
+const AUTO_REFRESH_MS = 15 * 60 * 1000; // 15 minutes
 
 export function useRssNews() {
   const [items, setItems] = useState<NewsItem[]>([]);
@@ -8,8 +10,14 @@ export function useRssNews() {
   const [error, setError] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [filterEnabled, setFilterEnabled] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const filterRef = useRef(filterEnabled);
 
-  const fetch = useCallback(async (filter: boolean) => {
+  filterRef.current = filterEnabled;
+
+  const fetchNews = useCallback(async (filter: boolean) => {
     setLoading(true);
     setError(null);
     try {
@@ -17,6 +25,7 @@ export function useRssNews() {
       if (res.success && res.items) {
         setItems(res.items);
         setIsLive(true);
+        setLastUpdated(new Date());
       } else {
         setError(res.error || "Haberler yüklenemedi");
       }
@@ -27,14 +36,32 @@ export function useRssNews() {
     }
   }, []);
 
+  // Initial fetch
   useEffect(() => {
-    fetch(filterEnabled);
+    fetchNews(filterEnabled);
   }, []);
+
+  // Auto-refresh interval
+  useEffect(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (autoRefresh) {
+      intervalRef.current = setInterval(() => {
+        fetchNews(filterRef.current);
+      }, AUTO_REFRESH_MS);
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [autoRefresh, fetchNews]);
 
   const refresh = useCallback((filter: boolean) => {
     setFilterEnabled(filter);
-    fetch(filter);
-  }, [fetch]);
+    fetchNews(filter);
+  }, [fetchNews]);
 
-  return { items, loading, error, isLive, filterEnabled, setFilterEnabled: (v: boolean) => { setFilterEnabled(v); fetch(v); }, refresh };
+  return {
+    items, loading, error, isLive, filterEnabled,
+    setFilterEnabled: (v: boolean) => { setFilterEnabled(v); fetchNews(v); },
+    refresh, autoRefresh, setAutoRefresh, lastUpdated,
+  };
 }

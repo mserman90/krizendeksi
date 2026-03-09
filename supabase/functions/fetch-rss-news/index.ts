@@ -20,14 +20,18 @@ const RSS_SOURCES: { name: string; url: string; language: string }[] = [
   { name: "aa-tr", url: "https://www.aa.com.tr/tr/rss/default?cat=guncel", language: "tr" },
   { name: "trt", url: "https://www.trthaber.com/xml_mobile.php?kat=guncel", language: "tr" },
   { name: "ntv", url: "https://www.ntv.com.tr/turkiye.rss", language: "tr" },
+  { name: "hurriyet", url: "https://www.hurriyet.com.tr/rss/gundem", language: "tr" },
+  { name: "sabah", url: "https://www.sabah.com.tr/rss/gundem.xml", language: "tr" },
+  { name: "aljazeera-tr", url: "https://www.aljazeera.com.tr/xml/rss/all.xml", language: "tr" },
+  { name: "dw-tr", url: "https://rss.dw.com/rdf/rss-tur-all", language: "tr" },
   // International English sources
-  { name: "reuters", url: "https://www.reutersagency.com/feed/?taxonomy=best-regions&post_type=best", language: "en" },
+  { name: "ap", url: "https://feeds.apnews.com/rss/apf-topnews", language: "en" },
   { name: "bbc", url: "https://feeds.bbci.co.uk/news/world/middle_east/rss.xml", language: "en" },
   { name: "aljazeera", url: "https://www.aljazeera.com/xml/rss/all.xml", language: "en" },
-  // Anadolu Agency English
   { name: "aa-en", url: "https://www.aa.com.tr/en/rss/default?cat=world", language: "en" },
-  // Al Jazeera Turkish
-  { name: "aljazeera-tr", url: "https://www.aljazeera.com.tr/xml/rss/all.xml", language: "tr" },
+  { name: "guardian-me", url: "https://www.theguardian.com/world/middleeast/rss", language: "en" },
+  { name: "dw-en", url: "https://rss.dw.com/rdf/rss-en-all", language: "en" },
+  { name: "middle-east-eye", url: "https://www.middleeasteye.net/rss", language: "en" },
 ];
 
 const KEYWORDS_TR = /\b(Fırat|Dicle|Euphrates|Tigris|baraj|su seviyesi|su kesintisi|taşkın|kuraklık|nehir|sulama|GAP|DSİ|hidroelektrik|reservoir|dam|drought|flood|Keban|Ilısu|Karakaya|Atatürk Barajı|Birecik|su|enerji|elektrik|akış|debi|havza|göl|gölet|kurak|sel|yağmur|yağış|irrigation|water|energy|river|basin)\b/i;

@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -117,10 +118,35 @@ Deno.serve(async (req) => {
       return db - da;
     });
 
+    const finalItems = allItems.slice(0, 80);
+
+    // Save to database
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const sb = createClient(supabaseUrl, supabaseKey);
+
+      const rows = finalItems.map((item) => ({
+        title: item.title,
+        link: item.link,
+        description: item.description,
+        pub_date: item.pubDate,
+        source: item.source,
+        language: item.language,
+      }));
+
+      if (rows.length > 0) {
+        await sb.from("news_articles").upsert(rows, { onConflict: "link", ignoreDuplicates: true });
+      }
+    } catch (saveErr) {
+      console.error("DB save error:", saveErr);
+      errors.push(`db-save: ${saveErr instanceof Error ? saveErr.message : String(saveErr)}`);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
-        items: allItems.slice(0, 80),
+        items: finalItems,
         total: allItems.length,
         errors: errors.length > 0 ? errors : undefined,
         fetchedAt: new Date().toISOString(),

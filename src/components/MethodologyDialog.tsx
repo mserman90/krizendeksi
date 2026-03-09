@@ -12,7 +12,7 @@ const hydroComponents = [
   { icon: Thermometer, label: "Buharlaşma (ET₀)", weight: 10, range: "0–70 mm", invert: false, source: "Open-Meteo Forecast", desc: "FAO Penman-Monteith referans evapotranspirasyonu. Buharlaşma arttıkça su kaybı hızlanır." },
   { icon: Sun, label: "Güneş Radyasyonu", weight: 8, range: "1–8 kWh/m²/gün", invert: false, source: "NASA POWER", desc: "Yüzeye ulaşan kısa dalga radyasyonu. Yüksek radyasyon buharlaşmayı tetikler." },
   { icon: Droplets, label: "Nem Oranı", weight: 8, range: "20–90 %", invert: true, source: "Open-Meteo Forecast", desc: "Ortalama bağıl nem. Düşük nem atmosferik buharlaşma baskısını artırır." },
-  { icon: Wind, label: "Rüzgar Hızı", weight: 6, range: "0–60 km/s", invert: false, source: "Open-Meteo Forecast", desc: "Maksimum rüzgar hızı. Yüksek rüzgar su yüzeyinden buharlaşmayı hızlandırır." },
+  { icon: Wind, label: "Rüzgar Hızı", weight: 6, range: "0–60 km/h", invert: false, source: "Open-Meteo Forecast", desc: "Maksimum rüzgar hızı. Yüksek rüzgar su yüzeyinden buharlaşmayı hızlandırır." },
   { icon: Snowflake, label: "Kar Yağışı", weight: 6, range: "0–50 mm", invert: true, source: "Open-Meteo Forecast", desc: "14 günlük toplam kar yağışı. Kar azalması gelecekteki akışı tehdit eder." },
 ];
 
@@ -523,19 +523,49 @@ const MethodologyDialog = () => {
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Hidrolojik Yöntem</h4>
                 <div className="space-y-2 text-[10px] text-muted-foreground leading-relaxed pl-4" style={{ textIndent: "-1.5rem", paddingLeft: "1.5rem" }}>
                   <p>
-                    Zsoter, E., Cloke, H. L., Stephens, E., de Rosnay, P., Muñoz-Sabater, J., Prudhomme, C., & Pappenberger, F. (2019). How well do operational seasonal ensemble streamflow forecasts perform? <em>Journal of Hydrology, 577</em>, 123898. <a href="https://doi.org/10.1016/j.jhydrol.2019.123898" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1016/j.jhydrol.2019.123898</a>
+                    Svoboda, M., Hayes, M., & Wood, D. (2012). <em>Standardized precipitation index user guide</em> (WMO-No. 1090). World Meteorological Organization. <a href="https://library.wmo.int/idurl/4/39629" target="_blank" rel="noopener" className="text-primary hover:underline">https://library.wmo.int/idurl/4/39629</a>
                   </p>
                   <p>
-                    Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998). <em>Crop evapotranspiration: Guidelines for computing crop water requirements</em> (FAO Irrigation and Drainage Paper No. 56). Food and Agriculture Organization of the United Nations.
+                    Hao, Z., & AghaKouchak, A. (2013). Multivariate standardized drought index: A parametric multi-index model. <em>Advances in Water Resources, 57</em>, 12–18. <a href="https://doi.org/10.1016/j.advwatres.2013.03.009" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1016/j.advwatres.2013.03.009</a>
                   </p>
                   <p>
-                    Stacke, T., & Hagemann, S. (2021). HydroPy (v1.0): A new global hydrology model written in Python. <em>Journal of Hydrology, 601</em>, 126570. <a href="https://doi.org/10.1016/S0022-1694(21)01456-6" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1016/S0022-1694(21)01456-6</a>
+                    Harrigan, S., Zsoter, E., Alfieri, L., Prudhomme, C., Salamon, P., Wetterhall, F., Barnard, C., Cloke, H., & Pappenberger, F. (2020). GloFAS-ERA5 operational global river discharge reanalysis 1979–present. <em>Earth System Science Data, 12</em>(3), 2043–2060. <a href="https://doi.org/10.5194/essd-12-2043-2020" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.5194/essd-12-2043-2020</a>
+                  </p>
+                  <p>
+                    Alfieri, L., Burek, P., Dutra, E., Krzeminski, B., Muraro, D., Thielen, J., & Pappenberger, F. (2013). GloFAS – global ensemble streamflow forecasting and flood early warning. <em>Hydrology and Earth System Sciences, 17</em>(3), 1161–1175. <a href="https://doi.org/10.5194/hess-17-1161-2013" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.5194/hess-17-1161-2013</a>
+                  </p>
+                  <p>
+                    Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998). <em>Crop evapotranspiration: Guidelines for computing crop water requirements</em> (FAO Irrigation and Drainage Paper No. 56). Food and Agriculture Organization of the United Nations. <a href="https://www.fao.org/4/X0490E/X0490E00.htm" target="_blank" rel="noopener" className="text-primary hover:underline">https://www.fao.org/4/X0490E/X0490E00.htm</a>
+                  </p>
+                  <p>
+                    Dorigo, W. A., Wagner, W., Hohensinn, R., Hahn, S., Paulik, C., Xaver, A., Gruber, A., Drusch, M., Mecklenburg, S., van Oevelen, P., Robock, A., & Jackson, T. (2011). The International Soil Moisture Network: A data hosting facility for global in situ soil moisture measurements. <em>Hydrology and Earth System Sciences, 15</em>(5), 1675–1698. <a href="https://doi.org/10.5194/hess-15-1675-2011" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.5194/hess-15-1675-2011</a>
+                  </p>
+                  <p>
+                    Sheffield, J., & Wood, E. F. (2008). Global trends and variability in soil moisture and drought characteristics, 1950–2000, from observation-driven simulations of the terrestrial hydrologic cycle. <em>Journal of Climate, 21</em>(3), 432–458. <a href="https://doi.org/10.1175/2007JCLI1822.1" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1175/2007JCLI1822.1</a>
+                  </p>
+                  <p>
+                    Stackhouse, P. W., Zhang, T., Westberg, D., Barnett, A. J., Bristow, T., Macpherson, B., & Hoell, J. M. (2018). <em>POWER release 8 (with GIS applications) methodology</em> (Version 2.0). NASA Langley Research Center. <a href="https://power.larc.nasa.gov/docs/methodology/" target="_blank" rel="noopener" className="text-primary hover:underline">https://power.larc.nasa.gov/docs/methodology/</a>
+                  </p>
+                  <p>
+                    Voss, K. A., Famiglietti, J. S., Lo, M., de Linage, C., Rodell, M., & Swenson, S. C. (2013). Groundwater depletion in the Middle East from GRACE with implications for transboundary water management in the Tigris-Euphrates-Western Iran region. <em>Water Resources Research, 49</em>(2), 904–914. <a href="https://doi.org/10.1002/wrcr.20078" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1002/wrcr.20078</a>
+                  </p>
+                  <p>
+                    Kavvas, M. L., Chen, Z. Q., Dogrul, C., Yoon, J. Y., Ohara, N., Liang, L., Aksoy, H., Anderson, M. L., Yoshitani, J., Fukami, K., & Matsuura, T. (2006). Watershed environmental hydrology (WEHY) model based on upscaled conservation equations: Hydrologic module. <em>Journal of Hydrologic Engineering, 11</em>(2), 173–181. <a href="https://doi.org/10.1061/(ASCE)1084-0699(2006)11:2(173)" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1061/(ASCE)1084-0699(2006)11:2(173)</a>
+                  </p>
+                  <p>
+                    Mishra, A. K., & Singh, V. P. (2010). A review of drought concepts. <em>Journal of Hydrology, 391</em>(1–2), 202–216. <a href="https://doi.org/10.1016/j.jhydrol.2010.07.012" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1016/j.jhydrol.2010.07.012</a>
+                  </p>
+                  <p>
+                    Keyantash, J., & Dracup, J. A. (2002). The quantification of drought: An evaluation of drought indices. <em>Bulletin of the American Meteorological Society, 83</em>(8), 1167–1180. <a href="https://doi.org/10.1175/1520-0477-83.8.1167" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1175/1520-0477-83.8.1167</a>
+                  </p>
+                  <p>
+                    Zargar, A., Sadiq, R., Naser, B., & Khan, F. I. (2011). A review of drought indices. <em>Environmental Reviews, 19</em>, 333–349. <a href="https://doi.org/10.1139/a11-013" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1139/a11-013</a>
+                  </p>
+                  <p>
+                    Yetim, F. (2023). The hydropolitics of the Euphrates–Tigris River Basin: Transboundary water disputes in the Middle East. <em>Water Policy, 25</em>(3), 312–330. <a href="https://doi.org/10.2166/wp.2023.182" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.2166/wp.2023.182</a>
                   </p>
                   <p>
                     Open-Meteo. (2024). <em>Open-Meteo Free Weather API</em>. <a href="https://open-meteo.com/" target="_blank" rel="noopener" className="text-primary hover:underline">https://open-meteo.com/</a>
-                  </p>
-                  <p>
-                    NASA. (2024). <em>POWER: Prediction of Worldwide Energy Resources</em>. <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener" className="text-primary hover:underline">https://power.larc.nasa.gov/</a>
                   </p>
                 </div>
               </div>
@@ -550,16 +580,16 @@ const MethodologyDialog = () => {
                     North Atlantic Treaty Organization. (2023). <em>Climate change action plan: Best practices</em>. NATO. <a href="https://www.nato.int/content/dam/nato/legacy-wcm/media_pdf/2023/7/pdf/230710-climate-change-best-practices.pdf" target="_blank" rel="noopener" className="text-primary hover:underline">https://www.nato.int/content/dam/nato/legacy-wcm/media_pdf/2023/7/pdf/230710-climate-change-best-practices.pdf</a>
                   </p>
                   <p>
-                    NATO Science and Technology Organization. (2023). <em>Climate change and security</em> (STO-TR-SAS-182). <a href="https://publications.sto.nato.int/publications/STO%20Technical%20Reports/STO-TR-SAS-182/TR-SAS-182-ALL.pdf" target="_blank" rel="noopener" className="text-primary hover:underline">https://publications.sto.nato.int/.../TR-SAS-182-ALL.pdf</a>
+                    NATO Science and Technology Organization. (2023). <em>Climate change and security</em> (STO-TR-SAS-182). <a href="https://publications.sto.nato.int/publications/STO%20Technical%20Reports/STO-TR-SAS-182/TR-SAS-182-ALL.pdf" target="_blank" rel="noopener" className="text-primary hover:underline">https://publications.sto.nato.int/publications/STO%20Technical%20Reports/STO-TR-SAS-182/TR-SAS-182-ALL.pdf</a>
                   </p>
                   <p>
-                    NATO Centre of Excellence Defence Against Terrorism. (2022). <em>Climate change and terrorism</em>. COEDAT. <a href="https://www.coedat.nato.int/publication/researches/22-Climate_ChangeandTerrorism.pdf" target="_blank" rel="noopener" className="text-primary hover:underline">https://www.coedat.nato.int/.../22-Climate_ChangeandTerrorism.pdf</a>
-                  </p>
-                  <p>
-                    Vetter, T., Reinhardt, J., Flörke, M., van Griensven, A., Hattermann, F., Huang, S., Koch, H., Pechlivanidis, I. G., Plötner, S., Seidou, O., Su, B., Vervoort, R. W., & Krysanova, V. (2017). Evaluation of sources of uncertainty in projected hydrological changes under climate change in 12 large-scale river basins. <em>Climatic Change, 141</em>(3), 419–433. <a href="https://www.sciencedirect.com/science/article/abs/pii/S0022169421014566" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1016/S0022-1694(21)01456-6</a>
+                    NATO Centre of Excellence Defence Against Terrorism. (2022). <em>Climate change and terrorism</em>. COEDAT. <a href="https://www.coedat.nato.int/publication/researches/22-Climate_ChangeandTerrorism.pdf" target="_blank" rel="noopener" className="text-primary hover:underline">https://www.coedat.nato.int/publication/researches/22-Climate_ChangeandTerrorism.pdf</a>
                   </p>
                   <p>
                     North Atlantic Treaty Organization. (2021). <em>Strengthened resilience commitment</em> (7 Baseline Requirements for National Resilience). NATO. <a href="https://www.nato.int/cps/en/natohq/topics_132722.htm" target="_blank" rel="noopener" className="text-primary hover:underline">https://www.nato.int/cps/en/natohq/topics_132722.htm</a>
+                  </p>
+                  <p>
+                    Vetter, T., Reinhardt, J., Flörke, M., van Griensven, A., Hattermann, F., Huang, S., Koch, H., Pechlivanidis, I. G., Plötner, S., Seidou, O., Su, B., Vervoort, R. W., & Krysanova, V. (2017). Evaluation of sources of uncertainty in projected hydrological changes under climate change in 12 large-scale river basins. <em>Climatic Change, 141</em>(3), 419–433. <a href="https://doi.org/10.1007/s10584-016-1794-y" target="_blank" rel="noopener" className="text-primary hover:underline">https://doi.org/10.1007/s10584-016-1794-y</a>
                   </p>
                 </div>
               </div>

@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Newspaper, ChevronLeft, ChevronRight, Archive, CalendarDays } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Newspaper, ChevronLeft, ChevronRight, Archive, CalendarDays, Search, X } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 type LangFilter = "all" | "tr" | "en";

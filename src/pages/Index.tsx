@@ -345,6 +345,7 @@ const Index = () => {
             </Link>
             <ThemeToggle />
           </div>
+        </div>
       </header>
 
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-5 space-y-4 sm:space-y-5">

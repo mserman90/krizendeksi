@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Newspaper, RefreshCw, Wifi, WifiOff, Filter, Globe, Languages } from "lucide-react";
+import { Newspaper, RefreshCw, Wifi, WifiOff, Filter, Globe, Languages, Timer, TimerOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -18,6 +18,9 @@ interface NewsPanelProps {
   error?: string | null;
   filterEnabled?: boolean;
   onFilterChange?: (enabled: boolean) => void;
+  autoRefresh?: boolean;
+  onAutoRefreshChange?: (enabled: boolean) => void;
+  lastUpdated?: Date | null;
 }
 
 const NewsPanel = ({
@@ -28,6 +31,9 @@ const NewsPanel = ({
   error,
   filterEnabled = true,
   onFilterChange,
+  autoRefresh,
+  onAutoRefreshChange,
+  lastUpdated,
 }: NewsPanelProps) => {
   const [langFilter, setLangFilter] = useState<LanguageFilter>("all");
 
@@ -64,6 +70,31 @@ const NewsPanel = ({
           </Button>
         )}
       </div>
+
+      {/* Auto-refresh toggle */}
+      {onAutoRefreshChange && (
+        <div className="flex items-center gap-2 px-1">
+          {autoRefresh ? (
+            <Timer className="h-3 w-3 text-primary" />
+          ) : (
+            <TimerOff className="h-3 w-3 text-muted-foreground" />
+          )}
+          <Switch
+            id="auto-refresh"
+            checked={autoRefresh}
+            onCheckedChange={onAutoRefreshChange}
+            className="scale-75"
+          />
+          <Label htmlFor="auto-refresh" className="text-[10px] text-muted-foreground cursor-pointer">
+            {autoRefresh ? "Otomatik yenileme (15dk)" : "Otomatik yenileme kapalı"}
+          </Label>
+          {lastUpdated && (
+            <span className="text-[9px] text-muted-foreground ml-auto">
+              Son: {lastUpdated.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Language filter */}
       <div className="flex items-center gap-2 px-1">

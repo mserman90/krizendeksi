@@ -30,6 +30,16 @@ const NewsArchive = () => {
   const [total, setTotal] = useState(0);
   const [langFilter, setLangFilter] = useState<LangFilter>("all");
   const [dateRange, setDateRange] = useState<DateRange>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      setPage(0);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const fetchArticles = async () => {
     setLoading(true);

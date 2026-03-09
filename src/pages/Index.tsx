@@ -16,12 +16,14 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
 import { useCrisisAlerts } from "@/hooks/useCrisisAlerts";
 import { BASINS, type BasinConfig } from "@/lib/basinConfig";
-import { Activity, Droplets, CloudRain, Map, Database, Bell, TrendingUp, Save, Shield } from "lucide-react";
+import { Activity, Droplets, CloudRain, Map, Database, Bell, TrendingUp, Save, Shield, Newspaper } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { saveHydroSnapshot } from "@/lib/api/snapshotApi";
 import WeeklyTrendChart from "@/components/WeeklyTrendChart";
 import ActionRecommendations from "@/components/ActionRecommendations";
+import NewsPanel from "@/components/NewsPanel";
+import { useRssNews } from "@/hooks/useRssNews";
 import { toast } from "sonner";
 
 const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
@@ -311,6 +313,7 @@ const BasinDashboard = ({ basin }: { basin: BasinConfig }) => {
 const Index = () => {
   const [activeBasin, setActiveBasin] = useState(BASINS[0].id);
   const { alerts, loading: alertsLoading } = useCrisisAlerts();
+  const rss = useRssNews();
   const currentBasin = BASINS.find((b) => b.id === activeBasin) ?? BASINS[0];
 
   return (
@@ -356,6 +359,27 @@ const Index = () => {
             </TabsContent>
           ))}
         </Tabs>
+
+        {/* News Panel */}
+        <Card className="dashboard-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="section-title flex items-center gap-2">
+              <Newspaper className="h-4 w-4 text-primary" /> Uluslararası Haberler
+              {rss.isLive && <Badge variant="secondary" className="text-[10px] font-medium">● Canlı</Badge>}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <NewsPanel
+              items={rss.items}
+              isLive={rss.isLive}
+              isLoading={rss.loading}
+              onRefresh={rss.refresh}
+              error={rss.error}
+              filterEnabled={rss.filterEnabled}
+              onFilterChange={rss.setFilterEnabled}
+            />
+          </CardContent>
+        </Card>
 
         {/* Alert History */}
         <Card className="dashboard-card">

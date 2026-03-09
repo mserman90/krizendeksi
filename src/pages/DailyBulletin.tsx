@@ -1,16 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import ThemeToggle from "@/components/ThemeToggle";
+import NewsletterSubscribe from "@/components/NewsletterSubscribe";
 import { Link } from "react-router-dom";
 import {
   Newspaper, Play, Pause, Square, Volume2, VolumeX,
   Calendar, ArrowLeft, RefreshCw, Radio, ChevronLeft, ChevronRight
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface DailySummary {
   id: string;
@@ -164,6 +167,22 @@ function PodcastPlayer({ text }: { text: string }) {
 
 export default function DailyBulletin() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+
+  // Handle unsubscribe via URL token
+  useEffect(() => {
+    const token = searchParams.get("unsubscribe");
+    if (token) {
+      supabase
+        .from("email_subscribers")
+        .update({ status: "unsubscribed", unsubscribed_at: new Date().toISOString() })
+        .eq("unsubscribe_token", token)
+        .then(({ error }) => {
+          if (error) toast.error("Abonelik iptal edilemedi");
+          else toast.success("Aboneliğiniz başarıyla iptal edildi");
+        });
+    }
+  }, [searchParams]);
 
   const { data: summaries, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["daily-summaries"],
@@ -300,6 +319,9 @@ export default function DailyBulletin() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Newsletter Subscribe */}
+            <NewsletterSubscribe />
 
             {/* Podcast Player */}
             <PodcastPlayer text={current.summary_text} />

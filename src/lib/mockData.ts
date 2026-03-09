@@ -13,6 +13,7 @@ export interface NewsItem {
   description: string;
   pubDate: string;
   source: string;
+  language?: string;
 }
 
 export interface CrisisScores {

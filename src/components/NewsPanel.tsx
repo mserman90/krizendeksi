@@ -99,7 +99,7 @@ const NewsPanel = ({
                   </p>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                      {item.source}
+                      {item.language === "en" ? "🌍" : "🇹🇷"} {item.source}
                     </Badge>
                     <span className="text-[10px] text-muted-foreground">{item.pubDate}</span>
                   </div>

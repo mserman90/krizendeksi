@@ -3,10 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Newspaper, ChevronLeft, ChevronRight, Archive } from "lucide-react";
+import { Newspaper, ChevronLeft, ChevronRight, Archive, CalendarDays } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 type LangFilter = "all" | "tr" | "en";
+type DateRange = "7" | "30" | "all";
 
 interface ArchivedArticle {
   id: string;
@@ -27,6 +28,7 @@ const NewsArchive = () => {
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [langFilter, setLangFilter] = useState<LangFilter>("all");
+  const [dateRange, setDateRange] = useState<DateRange>("all");
 
   const fetchArticles = async () => {
     setLoading(true);
@@ -39,6 +41,13 @@ const NewsArchive = () => {
 
       if (langFilter !== "all") {
         query = query.eq("language", langFilter);
+      }
+
+      if (dateRange !== "all") {
+        const days = parseInt(dateRange);
+        const since = new Date();
+        since.setDate(since.getDate() - days);
+        query = query.gte("fetched_at", since.toISOString());
       }
 
       const { data, count, error } = await query;
@@ -54,7 +63,7 @@ const NewsArchive = () => {
 
   useEffect(() => {
     fetchArticles();
-  }, [page, langFilter]);
+  }, [page, langFilter, dateRange]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 

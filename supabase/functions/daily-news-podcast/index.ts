@@ -43,23 +43,34 @@ function parseRssXml(xml: string, sourceName: string, language: string): RssItem
   return items;
 }
 
-async function fetchAllNews(): Promise<{ items: RssItem[]; errors: string[] }> {
-  const allItems: RssItem[] = [];
-  const errors: string[] = [];
-  await Promise.allSettled(
-    RSS_SOURCES.map(async ({ name, url, language }) => {
-      const ctrl = new AbortController();
-      const timeout = setTimeout(() => ctrl.abort(), 10000);
-      try {
-        const resp = await fetch(url, { signal: ctrl.signal, headers: { 'User-Agent': 'Mozilla/5.0 (compatible; FDOsintBot/1.0)', Accept: 'application/rss+xml, application/xml, text/xml, */*' } });
-        clearTimeout(timeout);
-        if (!resp.ok) { errors.push(`${name}: HTTP ${resp.status}`); return; }
-        allItems.push(...parseRssXml(await resp.text(), name, language));
-      } catch (e) { clearTimeout(timeout); errors.push(`${name}: ${e instanceof Error ? e.message : String(e)}`); }
-    })
-  );
-  allItems.sort((a, b) => (new Date(b.pubDate).getTime() || 0) - (new Date(a.pubDate).getTime() || 0));
-  return { items: allItems.slice(0, 50), errors };
+// Fetch news from news_articles table (populated by fetch-rss-news function)
+async function fetchNewsFromDB(sb: ReturnType<typeof createClient>): Promise<{ items: RssItem[]; errors: string[] }> {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const { data, error } = await sb
+    .from("news_articles")
+    .select("title, link, description, pub_date, source, language")
+    .gte("fetched_at", yesterday.toISOString())
+    .order("fetched_at", { ascending: false })
+    .limit(50);
+  
+  if (error) {
+    console.error("DB fetch error:", error);
+    return { items: [], errors: [`db: ${error.message}`] };
+  }
+  
+  const items: RssItem[] = (data || []).map(row => ({
+    title: row.title,
+    link: row.link,
+    description: row.description || "",
+    pubDate: row.pub_date || "",
+    source: row.source,
+    language: row.language || "tr",
+  }));
+  
+  return { items, errors: [] };
 }
 
 // ── AI Summary ───────────────────────────────────────────────────

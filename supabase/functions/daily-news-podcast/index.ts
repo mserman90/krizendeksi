@@ -61,14 +61,20 @@ async function fetchNewsFromDB(sb: ReturnType<typeof createClient>): Promise<{ i
     return { items: [], errors: [`db: ${error.message}`] };
   }
   
-  const items: RssItem[] = (data || []).map(row => ({
-    title: row.title,
-    link: row.link,
-    description: row.description || "",
-    pubDate: row.pub_date || "",
-    source: row.source,
-    language: row.language || "tr",
-  }));
+  const items: RssItem[] = (data || [])
+    .map(row => ({
+      title: row.title,
+      link: row.link,
+      description: row.description || "",
+      pubDate: row.pub_date || "",
+      source: row.source,
+      language: row.language || "tr",
+    }))
+    .filter(item => {
+      const text = `${item.title} ${item.description}`;
+      const keywords = item.language === "tr" ? KEYWORDS_TR : KEYWORDS_EN;
+      return keywords.test(text);
+    });
   
   return { items, errors: [] };
 }

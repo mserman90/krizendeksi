@@ -167,6 +167,22 @@ function PodcastPlayer({ text }: { text: string }) {
 
 export default function DailyBulletin() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+
+  // Handle unsubscribe via URL token
+  useEffect(() => {
+    const token = searchParams.get("unsubscribe");
+    if (token) {
+      supabase
+        .from("email_subscribers")
+        .update({ status: "unsubscribed", unsubscribed_at: new Date().toISOString() })
+        .eq("unsubscribe_token", token)
+        .then(({ error }) => {
+          if (error) toast.error("Abonelik iptal edilemedi");
+          else toast.success("Aboneliğiniz başarıyla iptal edildi");
+        });
+    }
+  }, [searchParams]);
 
   const { data: summaries, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["daily-summaries"],

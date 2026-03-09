@@ -320,6 +320,9 @@ export default function DailyBulletin() {
               </Card>
             </div>
 
+            {/* Newsletter Subscribe */}
+            <NewsletterSubscribe />
+
             {/* Podcast Player */}
             <PodcastPlayer text={current.summary_text} />
 

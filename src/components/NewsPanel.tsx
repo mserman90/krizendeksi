@@ -1,10 +1,14 @@
+import { useState } from "react";
 import type { NewsItem } from "@/lib/mockData";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Newspaper, RefreshCw, Wifi, WifiOff, Filter } from "lucide-react";
+import { Newspaper, RefreshCw, Wifi, WifiOff, Filter, Globe, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
+type LanguageFilter = "all" | "tr" | "en";
 
 interface NewsPanelProps {
   items: NewsItem[];
@@ -25,6 +29,14 @@ const NewsPanel = ({
   filterEnabled = true,
   onFilterChange,
 }: NewsPanelProps) => {
+  const [langFilter, setLangFilter] = useState<LanguageFilter>("all");
+
+  const filteredItems = items.filter((item) => {
+    if (langFilter === "all") return true;
+    const lang = item.language || "tr";
+    return lang === langFilter;
+  });
+
   return (
     <div className="space-y-2">
       {/* Status bar */}
@@ -53,7 +65,32 @@ const NewsPanel = ({
         )}
       </div>
 
-      {/* Filter toggle */}
+      {/* Language filter */}
+      <div className="flex items-center gap-2 px-1">
+        <Languages className="h-3 w-3 text-muted-foreground shrink-0" />
+        <ToggleGroup
+          type="single"
+          value={langFilter}
+          onValueChange={(v) => v && setLangFilter(v as LanguageFilter)}
+          size="sm"
+          className="gap-0.5"
+        >
+          <ToggleGroupItem value="all" className="h-5 px-2 text-[10px] rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+            Tümü
+          </ToggleGroupItem>
+          <ToggleGroupItem value="tr" className="h-5 px-2 text-[10px] rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+            🇹🇷 TR
+          </ToggleGroupItem>
+          <ToggleGroupItem value="en" className="h-5 px-2 text-[10px] rounded-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+            🌍 EN
+          </ToggleGroupItem>
+        </ToggleGroup>
+        <span className="text-[10px] text-muted-foreground ml-auto">
+          {filteredItems.length}/{items.length}
+        </span>
+      </div>
+
+      {/* Topic filter toggle */}
       {onFilterChange && (
         <div className="flex items-center gap-2 px-1">
           <Filter className="h-3 w-3 text-muted-foreground" />
@@ -75,14 +112,16 @@ const NewsPanel = ({
 
       <ScrollArea className="h-[240px] pr-3">
         <div className="space-y-3">
-          {items.length === 0 && !isLoading && (
+          {filteredItems.length === 0 && !isLoading && (
             <p className="text-sm text-muted-foreground text-center py-8">
-              {filterEnabled
-                ? "Fırat-Dicle ile ilgili haber bulunamadı. Filtreyi kapatmayı deneyin."
-                : "Haber bulunamadı."}
+              {langFilter !== "all"
+                ? `Seçili dilde (${langFilter === "tr" ? "Türkçe" : "İngilizce"}) haber bulunamadı.`
+                : filterEnabled
+                  ? "Fırat-Dicle ile ilgili haber bulunamadı. Filtreyi kapatmayı deneyin."
+                  : "Haber bulunamadı."}
             </p>
           )}
-          {items.map((item, i) => (
+          {filteredItems.map((item, i) => (
             <a
               key={i}
               href={item.link}

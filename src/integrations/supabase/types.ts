@@ -41,6 +41,39 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_summaries: {
+        Row: {
+          created_at: string
+          en_count: number
+          id: string
+          news_count: number
+          rss_errors: string[] | null
+          summary_date: string
+          summary_text: string
+          tr_count: number
+        }
+        Insert: {
+          created_at?: string
+          en_count?: number
+          id?: string
+          news_count?: number
+          rss_errors?: string[] | null
+          summary_date?: string
+          summary_text: string
+          tr_count?: number
+        }
+        Update: {
+          created_at?: string
+          en_count?: number
+          id?: string
+          news_count?: number
+          rss_errors?: string[] | null
+          summary_date?: string
+          summary_text?: string
+          tr_count?: number
+        }
+        Relationships: []
+      }
       hydro_snapshots: {
         Row: {
           avg_discharge_m3s: number

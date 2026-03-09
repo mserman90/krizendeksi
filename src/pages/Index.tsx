@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCrisisLevel, computeHydroCrisisIndex, computeNatoCrisisIndex } from "@/lib/mockData";
@@ -16,7 +17,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useHydroData } from "@/hooks/useHydroData";
 import { useCrisisAlerts } from "@/hooks/useCrisisAlerts";
 import { BASINS, type BasinConfig } from "@/lib/basinConfig";
-import { Activity, Droplets, CloudRain, Map, Database, Bell, TrendingUp, Save, Shield, Newspaper, Archive } from "lucide-react";
+import { Activity, Droplets, CloudRain, Map, Database, Bell, TrendingUp, Save, Shield, Newspaper, Archive, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { saveHydroSnapshot } from "@/lib/api/snapshotApi";
@@ -334,7 +335,16 @@ const Index = () => {
               </p>
             </div>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Link to="/bulten">
+              <Button size="sm" variant="outline" className="gap-1 text-xs">
+                <Radio className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Günlük Bülten</span>
+                <span className="sm:hidden">Bülten</span>
+              </Button>
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

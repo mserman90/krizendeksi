@@ -20,5 +20,13 @@ export async function fetchRssNews(filter = true): Promise<RssResponse> {
     return { success: false, error: error.message };
   }
 
+  // Auto-trigger AI summarization in the background
+  if (data?.success) {
+    supabase.functions.invoke("summarize-news").then(({ error: sumErr }) => {
+      if (sumErr) console.warn("Auto-summarize error:", sumErr);
+      else console.log("Auto-summarize triggered after RSS fetch");
+    });
+  }
+
   return data as RssResponse;
 }
